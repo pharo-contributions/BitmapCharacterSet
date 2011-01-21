@@ -1,12 +1,13 @@
 "
-This class implements a set of Character objects that uses a bitmap internally for multibyte characters to quickly tell if they belongs to it or not, rather than using a Dictionary like WideCharacterSet does. Byte characters are tested using a 256-element ByteArray.
+This class implements a set of Character objects like CharacterSet does, but it uses a bitmap internally to tell if wide (multibyte) characters belong to it rather than using a Dictionary like WideCharacterSet does. For byte characters, a simple 256-element ByteArray is used, which is faster but uses more memory.
 "
 Class {
 	#name : #BitmapCharacterSet,
 	#superclass : #Collection,
 	#instVars : [
 		'byteCharacters',
-		'wideCharacters'
+		'wideCharacters',
+		'tally'
 	],
 	#category : #'Collections-BitmapCharacterSet'
 }
@@ -30,10 +31,18 @@ BitmapCharacterSet class >> newFrom: aCollection [
 
 { #category : #comparing }
 BitmapCharacterSet >> = anObject [
-	^ self == anObject
-		or: [self class == anObject class
-			and: [byteCharacters = anObject byteCharacters
-				and: [wideCharacters = anObject wideCharacters]]].
+	| largerBitmap smallerBitmap |
+
+	self == anObject
+		ifTrue: [^ true].
+	self class == anObject class
+		ifFalse: [^ false].
+	tally = anObject size
+		ifFalse: [^ false].
+	self do: [:each |
+		(anObject includes: each)
+			ifFalse: [^ false]].
+	^ true.
 ]
 
 { #category : #adding }
@@ -41,16 +50,19 @@ BitmapCharacterSet >> add: aCharacter [
 	| asciiValue |
 
 	(asciiValue := aCharacter asciiValue) > 255
-		ifTrue: [| byteIndex |
+		ifTrue: [| byteIndex bitmask byte |
 			byteIndex := (asciiValue / 8) asInteger + 1.
 			(wideCharacters isNil or: [byteIndex > wideCharacters size])
 				ifTrue: [self growWideCharacterBitmapTo: (byteIndex * 1.5) asInteger].
-			wideCharacters
-				at: byteIndex
-				put:
-					((wideCharacters at: byteIndex)
-						bitOr: (16r80 bitShift: (asciiValue \\ 8) negated))]
-		ifFalse: [byteCharacters at: asciiValue + 1 put: 1].
+			bitmask := 16r80 bitShift: (asciiValue \\ 8) negated.
+			byte := wideCharacters at: byteIndex.
+			(byte bitAnd: bitmask) > 0
+				ifFalse: [tally := tally + 1].
+			wideCharacters at: byteIndex put: (byte bitOr: bitmask)]
+		ifFalse: [
+			(byteCharacters at: asciiValue + 1) = 1
+				ifFalse: [tally := tally + 1].
+			byteCharacters at: asciiValue + 1 put: 1].
 	^ aCharacter.
 ]
 
@@ -124,6 +136,7 @@ BitmapCharacterSet >> initialize: aCapacity [
 	byteCharacters := ByteArray new: 256.
 	aCapacity > 256
 		ifTrue: [self growWideCharacterBitmapTo: ((aCapacity - 1) / 8) asInteger + 1].
+	tally := 0.
 ]
 
 { #category : #copying }
@@ -150,7 +163,13 @@ BitmapCharacterSet >> remove: aCharacter ifAbsent: aBlock [
 			(byteCharacters at: asciiValue + 1) = 1
 				ifFalse: [^ aBlock value].
 			byteCharacters at: asciiValue + 1 put: 0].
+	tally := tally - 1.
 	^ aCharacter.
+]
+
+{ #category : #accessing }
+BitmapCharacterSet >> size [
+	^ tally
 ]
 
 { #category : #private }
