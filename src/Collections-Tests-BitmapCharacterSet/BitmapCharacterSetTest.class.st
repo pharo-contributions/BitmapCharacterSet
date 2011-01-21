@@ -57,6 +57,9 @@ BitmapCharacterSetTest >> testAdd [
 
 { #category : #tests }
 BitmapCharacterSetTest >> testCapacity [
+	"Since the bitmap is allocated in bytes, the last byte can have excess capacity
+	even when a specific capacity is specified."
+
 	self
 		assert: (self characterSetClass new: 256) capacity = 256;
 		assert: (self characterSetClass new: 257) capacity = 264;
@@ -84,7 +87,7 @@ BitmapCharacterSetTest >> testEquals [
 		assert: self emptyCharacterSet = self emptyCharacterSet;
 		assert: self nonEmptyCharacterSet = self nonEmptyCharacterSet;
 		deny: self emptyCharacterSet = self nonEmptyCharacterSet;
-		deny: self nonEmptyCharacterSet = self emptyCharacterSet.
+		deny: self nonEmptyCharacterSet = self emptyCharacterSet
 ]
 
 { #category : #tests }
@@ -147,6 +150,10 @@ BitmapCharacterSetTest >> testSize [
 	self characters doWithIndex: [:each :i |
 		set add: each.
 		self assert: set size = i].
+
+	"Adding the same characters again shouldn't alter the size"
+	set addAll: self characters.
+	self assert: set size = self characters size.
 
 	self characters doWithIndex: [:each :i |
 		set remove: each.
