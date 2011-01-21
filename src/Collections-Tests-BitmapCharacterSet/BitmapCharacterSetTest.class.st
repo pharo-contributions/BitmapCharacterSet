@@ -84,7 +84,7 @@ BitmapCharacterSetTest >> testEquals [
 		assert: self emptyCharacterSet = self emptyCharacterSet;
 		assert: self nonEmptyCharacterSet = self nonEmptyCharacterSet;
 		deny: self emptyCharacterSet = self nonEmptyCharacterSet;
-		deny: self nonEmptyCharacterSet = self emptyCharacterSet
+		deny: self nonEmptyCharacterSet = self emptyCharacterSet.
 ]
 
 { #category : #tests }
@@ -135,4 +135,20 @@ BitmapCharacterSetTest >> testRemoveIfAbsent [
 		assert: (self characters allSatisfy: [:each | (set remove: each ifAbsent: [nil]) = each]);
 		deny: (self characters anySatisfy: [:each | set includes: each]);
 		assert: (self characters allSatisfy: [:each | (set remove: each ifAbsent: [nil]) isNil]).
+]
+
+{ #category : #tests }
+BitmapCharacterSetTest >> testSize [
+	| set |
+
+	set := self emptyCharacterSet.
+	self assert: set size isZero.
+
+	self characters doWithIndex: [:each :i |
+		set add: each.
+		self assert: set size = i].
+
+	self characters doWithIndex: [:each :i |
+		set remove: each.
+		self assert: set size = (self characters size - i)].	
 ]
