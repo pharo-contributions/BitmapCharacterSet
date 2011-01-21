@@ -50,12 +50,12 @@ BitmapCharacterSet >> add: aCharacter [
 	| asciiValue |
 
 	(asciiValue := aCharacter asciiValue) > 255
-		ifTrue: [| byteIndex bitmask byte |
+		ifTrue: [| byteIndex byte bitmask |
 			byteIndex := (asciiValue / 8) asInteger + 1.
 			(wideCharacters isNil or: [byteIndex > wideCharacters size])
 				ifTrue: [self growWideCharacterBitmapTo: (byteIndex * 1.5) asInteger].
-			bitmask := 16r80 bitShift: (asciiValue \\ 8) negated.
 			byte := wideCharacters at: byteIndex.
+			bitmask := 16r80 bitShift: (asciiValue \\ 8) negated.
 			(byte bitAnd: bitmask) > 0
 				ifFalse: [tally := tally + 1].
 			wideCharacters at: byteIndex put: (byte bitOr: bitmask)]
@@ -121,14 +121,14 @@ BitmapCharacterSet >> hash [
 BitmapCharacterSet >> includes: aCharacter [
 	| asciiValue |
 
-	^ (asciiValue := aCharacter asciiValue) > 255
-		ifTrue: [ | byteIndex |
+	(asciiValue := aCharacter asciiValue) > 255
+		ifTrue: [ | byteIndex bitmask |
 			byteIndex := (asciiValue / 8) asInteger + 1.
 			(wideCharacters isNil or: [byteIndex > wideCharacters size])
 				ifTrue: [^ false].
-			^ ((wideCharacters at: byteIndex)
-				bitAnd: (16r80 bitShift: (asciiValue \\ 8) negated)) > 0]
-		ifFalse: [(byteCharacters at: asciiValue + 1) = 1]
+			bitmask := 16r80 bitShift: (asciiValue \\ 8) negated.
+			^ ((wideCharacters at: byteIndex) bitAnd: bitmask) > 0]
+		ifFalse: [^ (byteCharacters at: asciiValue + 1) = 1]
 ]
 
 { #category : #initialization }
