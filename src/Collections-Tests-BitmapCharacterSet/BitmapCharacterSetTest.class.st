@@ -5,6 +5,26 @@ Class {
 }
 
 { #category : #accessing }
+BitmapCharacterSetTest >> absentCharacters [
+	"This returns the neighboring characters of each element of #characters, provided they
+	are not also elements of #characters"
+
+	| absentCharacters |
+
+	absentCharacters := OrderedCollection new.
+	self characters do: [:each | | asciiValue nextChar previousChar |
+		(asciiValue := each asciiValue) > 0
+			ifTrue: [
+				previousChar := Character value: asciiValue - 1.
+				(self characters includes: previousChar)
+					ifFalse: [absentCharacters add: previousChar]].
+		nextChar := Character value: asciiValue + 1.
+		(self characters includes: nextChar)
+			ifFalse: [absentCharacters add: nextChar]].
+	^ absentCharacters asArray.
+]
+
+{ #category : #accessing }
 BitmapCharacterSetTest >> characterSetClass [
 	^ BitmapCharacterSet
 ]
@@ -80,10 +100,14 @@ BitmapCharacterSetTest >> testIncludes [
 	| set |
 
 	set := self emptyCharacterSet.
-	self deny: (self characters anySatisfy: [:each | set includes: each]).
+	self
+		deny: (self characters anySatisfy: [:each | set includes: each]);
+		deny: (self absentCharacters anySatisfy: [:each | set includes: each]).
 
 	set addAll: self characters.
-	self assert: (self characters allSatisfy: [:each | set includes: each]).
+	self
+		assert: (self characters allSatisfy: [:each | set includes: each]);
+		deny: (self absentCharacters anySatisfy: [:each | set includes: each]).
 ]
 
 { #category : #tests }
@@ -107,6 +131,7 @@ BitmapCharacterSetTest >> testRemoveIfAbsent [
 
 	set := self nonEmptyCharacterSet.
 	self
+		assert: (self absentCharacters allSatisfy: [:each | (set remove: each ifAbsent: [nil]) isNil]);
 		assert: (self characters allSatisfy: [:each | (set remove: each ifAbsent: [nil]) = each]);
 		deny: (self characters anySatisfy: [:each | set includes: each]);
 		assert: (self characters allSatisfy: [:each | (set remove: each ifAbsent: [nil]) isNil]).
