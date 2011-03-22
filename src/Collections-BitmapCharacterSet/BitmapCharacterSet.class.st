@@ -1,5 +1,5 @@
 "
-This class implements a set of Character objects like CharacterSet does, but it uses a bitmap internally to tell if wide (multibyte) characters belong to it rather than using a Dictionary like WideCharacterSet does. For byte characters, a simple 256-element ByteArray is used, which is faster but uses more memory.
+This class implements a set of Character objects like CharacterSet and WideCharacterSet, but it uses a bitmap internally to tell if wide (multibyte) characters belong to it rather than using a Dictionary like WideCharacterSet does. For byte characters, a simple 256-element ByteArray is used, which is faster but uses more memory.
 "
 Class {
 	#name : #BitmapCharacterSet,
@@ -64,11 +64,6 @@ BitmapCharacterSet >> add: aCharacter [
 				ifFalse: [tally := tally + 1].
 			byteCharacters at: asciiValue + 1 put: 1].
 	^ aCharacter.
-]
-
-{ #category : #private }
-BitmapCharacterSet >> byteCharacters [
-	^ byteCharacters
 ]
 
 { #category : #accessing }
@@ -170,9 +165,4 @@ BitmapCharacterSet >> remove: aCharacter ifAbsent: aBlock [
 { #category : #accessing }
 BitmapCharacterSet >> size [
 	^ tally
-]
-
-{ #category : #private }
-BitmapCharacterSet >> wideCharacters [
-	^ wideCharacters
 ]
