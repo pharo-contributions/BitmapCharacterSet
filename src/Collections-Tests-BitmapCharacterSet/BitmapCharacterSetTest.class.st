@@ -12,16 +12,17 @@ BitmapCharacterSetTest >> absentCharacters [
 	| absentCharacters |
 
 	absentCharacters := OrderedCollection new.
-	self characters do: [:each | | asciiValue nextChar previousChar |
-		(asciiValue := each asciiValue) > 0
-			ifTrue: [
-				previousChar := Character value: asciiValue - 1.
-				(self characters includes: previousChar)
-					ifFalse: [absentCharacters add: previousChar]].
-		nextChar := Character value: asciiValue + 1.
-		(self characters includes: nextChar)
-			ifFalse: [absentCharacters add: nextChar]].
+	self characterCodes do: [:each | 
+		(each <= 0 or: [self characterCodes includes: each - 1])
+			ifFalse: [absentCharacters add: (Character value: each - 1)].
+		(self characterCodes includes: each + 1)
+			ifFalse: [absentCharacters add: (Character value: each + 1)]].
 	^ absentCharacters asArray.
+]
+
+{ #category : #accessing }
+BitmapCharacterSetTest >> characterCodes [
+	^ #(0 50 100 200 255 256 500 1000)
 ]
 
 { #category : #accessing }
@@ -31,7 +32,7 @@ BitmapCharacterSetTest >> characterSetClass [
 
 { #category : #accessing }
 BitmapCharacterSetTest >> characters [
-	^ #(0 50 100 200 255 256 500 1000) collect: [:each | Character value: each]
+	^ self characterCodes collect: [:each | Character value: each]
 ]
 
 { #category : #accessing }
