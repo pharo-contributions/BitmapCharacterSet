@@ -1,7 +1,7 @@
 "
-(ConfigurationOfOrderPreservingDictionary project version: #stable) load
+(ConfigurationOfBitmapCharacterSet project version: #stable) load
 
-(ConfigurationOfOrderPreservingDictionary project version: #stable) load: #('Tests')
+(ConfigurationOfBitmapCharacterSet project version: #stable) load: #('Tests')
 "
 Class {
 	#name : #ConfigurationOfBitmapCharacterSet,
