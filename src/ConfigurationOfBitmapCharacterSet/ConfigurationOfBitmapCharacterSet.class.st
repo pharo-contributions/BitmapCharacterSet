@@ -159,7 +159,7 @@ ConfigurationOfBitmapCharacterSet >> version100: spec [
 		spec blessing: #release.
 		spec description: 'Latest versions from Squeaksource'.
 		
-		spec package: ' Collections-BitmapCharacterSet' with: ' Collections-BitmapCharacterSet-JAA.5'.
+		spec package: 'Collections-BitmapCharacterSet' with: 'Collections-BitmapCharacterSet-JAA.5'.
 		spec package: 'Collections-Tests-BitmapCharacterSet' with: 'Collections-Tests-BitmapCharacterSet-JAA.5'
 		]
 	
