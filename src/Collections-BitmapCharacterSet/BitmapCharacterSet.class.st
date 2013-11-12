@@ -47,7 +47,7 @@ BitmapCharacterSet >> add: aCharacter [
 
 	(asciiValue := aCharacter asciiValue) > 255
 		ifTrue: [| byteIndex byte bitmask |
-			byteIndex := (asciiValue // 8) + 1.
+			byteIndex := (asciiValue // 8) - 32 + 1.
 			(wideCharacters isNil or: [byteIndex > wideCharacters size])
 				ifTrue: [self growWideCharacterBitmapTo: (byteIndex * 1.5) asInteger].
 
@@ -71,7 +71,7 @@ BitmapCharacterSet >> capacity [
 	^ byteCharacters size +
 		(wideCharacters
 			ifNil: [0]
-			ifNotNil: [(wideCharacters size) * 8 - 256]).
+			ifNotNil: [wideCharacters size * 8]).
 ]
 
 { #category : #enumerating }
@@ -84,18 +84,21 @@ BitmapCharacterSet >> do: aBlock [
 	wideCharacters doWithIndex: [:each :byteIndex |
 		0 to: 7 do: [:shiftIndex |
 			(each bitAnd: (16r80 bitShift: shiftIndex negated)) > 0
-				ifTrue: [aBlock value: (Character value: (byteIndex - 1) * 8 + shiftIndex)]]]
+				ifTrue: [aBlock value: (Character value: (byteIndex - 1) * 8 + 256 + shiftIndex)]]]
 ]
 
 { #category : #private }
-BitmapCharacterSet >> growWideCharacterBitmapTo: aSize [
+BitmapCharacterSet >> growWideCharacterBitmapTo: aSizeInBytes [
+	| newSize |
+
+	newSize := aSizeInBytes min: (self lastCodePoint // 8) - 32 + 1.
 	wideCharacters
 		ifNil: [
-			wideCharacters := ByteArray new: aSize.
+			wideCharacters := ByteArray new: newSize.
 			^ self].
 
 	wideCharacters :=
-		(ByteArray new: aSize)
+		(ByteArray new: newSize)
 			replaceFrom: 1
 			to: wideCharacters size
 			with: wideCharacters
@@ -118,7 +121,7 @@ BitmapCharacterSet >> includes: aCharacter [
 
 	^ (asciiValue := aCharacter asciiValue) > 255
 		ifTrue: [ | byteIndex bitmask |
-			byteIndex := (asciiValue // 8) + 1.
+			byteIndex := (asciiValue // 8) - 32 + 1.
 			(wideCharacters isNil or: [byteIndex > wideCharacters size])
 				ifTrue: [^ false].
 			bitmask := 16r80 bitShift: (asciiValue \\ 8) negated.
@@ -130,8 +133,13 @@ BitmapCharacterSet >> includes: aCharacter [
 BitmapCharacterSet >> initialize: aCapacity [
 	byteCharacters := ByteArray new: 256.
 	aCapacity > 256
-		ifTrue: [self growWideCharacterBitmapTo: ((aCapacity - 1) // 8) + 1].
+		ifTrue: [self growWideCharacterBitmapTo: ((aCapacity - 1) // 8) - 32 + 1].
 	tally := 0.
+]
+
+{ #category : #private }
+BitmapCharacterSet >> lastCodePoint [
+	^ 16r10FFFF
 ]
 
 { #category : #copying }
@@ -147,7 +155,7 @@ BitmapCharacterSet >> remove: aCharacter ifAbsent: aBlock [
 
 	(asciiValue := aCharacter asciiValue) > 255
 		ifTrue: [| byteIndex byte bitmask |
-			byteIndex := (asciiValue // 8) + 1.
+			byteIndex := (asciiValue // 8) - 32 + 1.
 			(wideCharacters isNil or: [byteIndex > wideCharacters size])
 				ifTrue: [^ aBlock value].
 
