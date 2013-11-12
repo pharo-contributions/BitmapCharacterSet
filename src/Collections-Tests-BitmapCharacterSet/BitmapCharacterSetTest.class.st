@@ -115,6 +115,20 @@ BitmapCharacterSetTest >> testIncludes [
 ]
 
 { #category : #tests }
+BitmapCharacterSetTest >> testMaxCapacity [
+	| set lastCodePoint lastCodePointSize |
+
+	lastCodePoint := self emptyCharacterSet lastCodePoint.
+	lastCodePointSize := lastCodePoint + 1.
+
+	set := self characterSetClass new: lastCodePointSize.
+	self assert: set capacity = (lastCodePointSize + (lastCodePointSize \\ 8)).
+
+	set := self characterSetClass new: lastCodePointSize + 8.
+	self assert: set capacity = (lastCodePointSize + (lastCodePointSize \\ 8)).
+]
+
+{ #category : #tests }
 BitmapCharacterSetTest >> testNewFrom [
 	| set newSet |
 
