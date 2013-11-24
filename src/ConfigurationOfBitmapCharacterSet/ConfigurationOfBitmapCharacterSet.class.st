@@ -30,6 +30,47 @@ ConfigurationOfBitmapCharacterSet class >> bootstrapPackage: aString from: aPath
 			version workingCopy repositoryGroup addRepository: repository]
 ]
 
+{ #category : #catalog }
+ConfigurationOfBitmapCharacterSet class >> catalogChangeLog [
+		
+ ^ '
+-25/11/2013 - Speed improvements from Monty.
+[[[
+(ConfigurationOfSoup project version: #''stable'') load
+(ConfigurationOfSoup project version: ''1.1'') load
+]]]
+
+-1/2013 - Migrated from squeaksource.
+[[[
+(ConfigurationOfSoup project version: #''stable'') load
+(ConfigurationOfSoup project version: ''1.0'') load
+]]]
+
+
+'
+	
+	
+]
+
+{ #category : #catalog }
+ConfigurationOfBitmapCharacterSet class >> catalogDescription [
+
+^ 
+'BitmapCharacter is a special data structure.'
+]
+
+{ #category : #catalog }
+ConfigurationOfBitmapCharacterSet class >> catalogKeyClassesAndExample [
+
+	^ 'It is composed of a single class BitmapCharacter.'
+]
+
+{ #category : #catalog }
+ConfigurationOfBitmapCharacterSet class >> catalogKeywords [
+	^ #(data structure HTML web)
+	
+]
+
 { #category : #private }
 ConfigurationOfBitmapCharacterSet class >> ensureMetacello [
 	"Bootstrap Gofer (if necessary), bootstrap ConfigurationOfMetacello (using old Gofer API), then load the latest 
@@ -147,7 +188,7 @@ ConfigurationOfBitmapCharacterSet >> project [
 ConfigurationOfBitmapCharacterSet >> stable: spec [
 	<symbolicVersion: #'stable'>
 
-	spec for: #'common' version: '1.0'.
+	spec for: #'common' version: '1.1'.
 	
 ]
 
@@ -160,6 +201,22 @@ ConfigurationOfBitmapCharacterSet >> version100: spec [
 		spec description: 'Latest versions from Squeaksource'.
 		
 		spec package: 'Collections-BitmapCharacterSet' with: 'Collections-BitmapCharacterSet-JAA.5'.
+		spec package: 'Collections-Tests-BitmapCharacterSet' with: 'Collections-Tests-BitmapCharacterSet-JAA.5'
+		]
+	
+
+
+]
+
+{ #category : #versions }
+ConfigurationOfBitmapCharacterSet >> version110: spec [ 
+	<version: '1.1' imports: #('1.0-baseline') >
+	
+	spec for: #common do: [
+		spec blessing: #release.
+		spec description: 'Speed Improvement from Monty'.
+		
+		spec package: 'Collections-BitmapCharacterSet' with: 'Collections-BitmapCharacterSet-Anonymous.6'.
 		spec package: 'Collections-Tests-BitmapCharacterSet' with: 'Collections-Tests-BitmapCharacterSet-JAA.5'
 		]
 	
