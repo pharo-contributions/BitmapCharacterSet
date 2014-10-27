@@ -45,8 +45,12 @@ BitmapCharacterSet >> = anObject [
 BitmapCharacterSet >> add: aCharacter [
 	| asciiValue |
 
-	(asciiValue := aCharacter asciiValue) > 255
-		ifTrue: [| byteIndex byte bitmask |
+	(asciiValue := aCharacter asciiValue) < 256
+		ifTrue: [
+			(byteCharacters at: asciiValue + 1) = 1
+				ifFalse: [tally := tally + 1].
+			byteCharacters at: asciiValue + 1 put: 1]
+		ifFalse: [| byteIndex byte bitmask |
 			byteIndex := (asciiValue // 8) - 32 + 1.
 			(wideCharacters isNil or: [byteIndex > wideCharacters size])
 				ifTrue: [self growWideCharacterBitmapTo: (byteIndex * 1.5) asInteger].
@@ -58,11 +62,7 @@ BitmapCharacterSet >> add: aCharacter [
 			(byte bitAnd: bitmask) > 0
 				ifFalse: [tally := tally + 1].
 
-			wideCharacters at: byteIndex put: (byte bitOr: bitmask)]
-		ifFalse: [
-			(byteCharacters at: asciiValue + 1) = 1
-				ifFalse: [tally := tally + 1].
-			byteCharacters at: asciiValue + 1 put: 1].
+			wideCharacters at: byteIndex put: (byte bitOr: bitmask)].
 	^ aCharacter.
 ]
 
@@ -119,14 +119,15 @@ BitmapCharacterSet >> hash [
 BitmapCharacterSet >> includes: aCharacter [
 	| asciiValue |
 
-	^ (asciiValue := aCharacter asciiValue) > 255
-		ifTrue: [ | byteIndex bitmask |
+	(asciiValue := aCharacter asciiValue) < 256
+		ifTrue: [^ (byteCharacters at: asciiValue + 1) = 1]
+		ifFalse: [| byteIndex bitmask |
 			byteIndex := (asciiValue // 8) - 32 + 1.
-			(wideCharacters isNil or: [byteIndex > wideCharacters size])
+			(wideCharacters == nil
+				or: [byteIndex > wideCharacters size])
 				ifTrue: [^ false].
 			bitmask := 16r80 bitShift: (asciiValue \\ 8) negated.
-			((wideCharacters at: byteIndex) bitAnd: bitmask) > 0]
-		ifFalse: [(byteCharacters at: asciiValue + 1) = 1]
+			^ ((wideCharacters at: byteIndex) bitAnd: bitmask) > 0]
 ]
 
 { #category : #initialization }
@@ -153,8 +154,12 @@ BitmapCharacterSet >> postCopy [
 BitmapCharacterSet >> remove: aCharacter ifAbsent: aBlock [
 	| asciiValue |
 
-	(asciiValue := aCharacter asciiValue) > 255
-		ifTrue: [| byteIndex byte bitmask |
+	(asciiValue := aCharacter asciiValue) < 256
+		ifTrue: [
+			(byteCharacters at: asciiValue + 1) = 1
+				ifFalse: [^ aBlock value].
+			byteCharacters at: asciiValue + 1 put: 0]
+		ifFalse: [| byteIndex byte bitmask |
 			byteIndex := (asciiValue // 8) - 32 + 1.
 			(wideCharacters isNil or: [byteIndex > wideCharacters size])
 				ifTrue: [^ aBlock value].
@@ -163,11 +168,7 @@ BitmapCharacterSet >> remove: aCharacter ifAbsent: aBlock [
 			((byte := wideCharacters at: byteIndex) bitAnd: bitmask) > 0
 				ifFalse: [^ aBlock value].
 
-			wideCharacters at: byteIndex put: (byte bitAnd: bitmask bitInvert)]
-		ifFalse: [
-			(byteCharacters at: asciiValue + 1) = 1
-				ifFalse: [^ aBlock value].
-			byteCharacters at: asciiValue + 1 put: 0].
+			wideCharacters at: byteIndex put: (byte bitAnd: bitmask bitInvert)].
 	tally := tally - 1.
 	^ aCharacter.
 ]
