@@ -12,6 +12,11 @@ Class {
 	#category : #'Collections-BitmapCharacterSet'
 }
 
+{ #category : #'as yet unclassified' }
+BitmapCharacterSet class >> inspectorClass [
+	^ Set inspectorClass
+]
+
 { #category : #'instance creation' }
 BitmapCharacterSet class >> new [
 	^ self new: 256
