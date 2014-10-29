@@ -188,7 +188,7 @@ ConfigurationOfBitmapCharacterSet >> project [
 ConfigurationOfBitmapCharacterSet >> stable: spec [
 	<symbolicVersion: #'stable'>
 
-	spec for: #'common' version: '1.1.1'.
+	spec for: #'common' version: '1.1.2'.
 	
 ]
 
@@ -231,6 +231,20 @@ ConfigurationOfBitmapCharacterSet >> version111: spec [
 	spec for: #common do: [ 
 		spec blessing: #release.
 		spec package: 'Collections-BitmapCharacterSet' with: 'Collections-BitmapCharacterSet-monty.7'.
+		spec package: 'Collections-Tests-BitmapCharacterSet' with: 'Collections-Tests-BitmapCharacterSet-Anonymous.6'
+		]
+	
+
+
+]
+
+{ #category : #versions }
+ConfigurationOfBitmapCharacterSet >> version112: spec [ 
+	<version: '1.1.2' imports: #('1.0-baseline') >
+	
+	spec for: #common do: [ 
+		spec blessing: #release.
+		spec package: 'Collections-BitmapCharacterSet' with: 'Collections-BitmapCharacterSet-monty.8'.
 		spec package: 'Collections-Tests-BitmapCharacterSet' with: 'Collections-Tests-BitmapCharacterSet-Anonymous.6'
 		]
 	
