@@ -12,7 +12,7 @@ Class {
 	#category : #'Collections-BitmapCharacterSet'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #inspecting }
 BitmapCharacterSet class >> inspectorClass [
 	^ Set inspectorClass
 ]
@@ -130,14 +130,14 @@ BitmapCharacterSet >> includes: aCharacter [
 	| asciiValue |
 
 	(asciiValue := aCharacter asciiValue) < 256
-		ifTrue: [^ (byteCharacters at: asciiValue + 1)]
-		ifFalse: [| byteIndex bitmask |
-			byteIndex := (asciiValue // 8) - 32 + 1.
-			(wideCharacters == nil
-				or: [byteIndex > wideCharacters size])
+		ifTrue: [^ byteCharacters at: asciiValue + 1]
+		ifFalse: [| byteIndex |
+			wideCharacters
+				ifNil: [^ false].
+			(byteIndex := (asciiValue // 8) - 32 + 1) > wideCharacters size
 				ifTrue: [^ false].
-			bitmask := 16r80 bitShift: (asciiValue \\ 8) negated.
-			^ ((wideCharacters at: byteIndex) bitAnd: bitmask) > 0]
+			^ ((wideCharacters at: byteIndex) bitAnd:
+				(16r80 bitShift: (asciiValue \\ 8) negated)) > 0]
 ]
 
 { #category : #initialization }
