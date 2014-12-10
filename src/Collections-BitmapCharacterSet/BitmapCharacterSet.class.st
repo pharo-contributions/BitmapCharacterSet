@@ -1,5 +1,5 @@
 "
-This class implements a set of Character objects similar to CharacterSet and WideCharacterSet, but it uses a bitmap internally to test if wide (multibyte) characters belong to it rather than using a Dictionary like WideCharacterSet does. For byte characters, a simple 256-element ByteArray is used, the same as with CharacterSet, which is faster but uses more memory.
+This class implements a set of Character objects similar to CharacterSet and WideCharacterSet, but it uses a bitmap internally to test if wide (multibyte) characters belong to it rather than using a Dictionary like WideCharacterSet does. For byte characters, a simple 256-element Array is used, the same as with CharacterSet, which is faster but uses more memory.
 "
 Class {
 	#name : #BitmapCharacterSet,
@@ -52,9 +52,9 @@ BitmapCharacterSet >> add: aCharacter [
 
 	(asciiValue := aCharacter asciiValue) < 256
 		ifTrue: [
-			(byteCharacters at: asciiValue + 1) = 1
+			(byteCharacters at: asciiValue + 1)
 				ifFalse: [tally := tally + 1].
-			byteCharacters at: asciiValue + 1 put: 1]
+			byteCharacters at: asciiValue + 1 put: true]
 		ifFalse: [| byteIndex byte bitmask |
 			byteIndex := (asciiValue // 8) - 32 + 1.
 			(wideCharacters isNil or: [byteIndex > wideCharacters size])
@@ -81,15 +81,20 @@ BitmapCharacterSet >> capacity [
 
 { #category : #enumerating }
 BitmapCharacterSet >> do: aBlock [
-	byteCharacters doWithIndex: [:each :i |
-		each = 1
+	1 to: byteCharacters size do: [:i |
+		(byteCharacters at: i)
 			ifTrue: [aBlock value: (Character value: i - 1)]].
 
-	wideCharacters ifNil: [^ self].
-	wideCharacters doWithIndex: [:each :byteIndex |
+	wideCharacters
+		ifNil: [^ self].
+	1 to: wideCharacters size do: [:byteIndex |
 		0 to: 7 do: [:shiftIndex |
-			(each bitAnd: (16r80 bitShift: shiftIndex negated)) > 0
-				ifTrue: [aBlock value: (Character value: (byteIndex - 1) * 8 + 256 + shiftIndex)]]]
+			((wideCharacters at: byteIndex) bitAnd:
+				(16r80 bitShift: shiftIndex negated)) > 0
+				ifTrue: [
+					aBlock value:
+						(Character value:
+							(byteIndex - 1) * 8 + 256 + shiftIndex)]]].
 ]
 
 { #category : #private }
@@ -125,7 +130,7 @@ BitmapCharacterSet >> includes: aCharacter [
 	| asciiValue |
 
 	(asciiValue := aCharacter asciiValue) < 256
-		ifTrue: [^ (byteCharacters at: asciiValue + 1) = 1]
+		ifTrue: [^ (byteCharacters at: asciiValue + 1)]
 		ifFalse: [| byteIndex bitmask |
 			byteIndex := (asciiValue // 8) - 32 + 1.
 			(wideCharacters == nil
@@ -137,7 +142,7 @@ BitmapCharacterSet >> includes: aCharacter [
 
 { #category : #initialization }
 BitmapCharacterSet >> initialize: aCapacity [
-	byteCharacters := ByteArray new: 256.
+	byteCharacters := Array new: 256 withAll: false.
 	aCapacity > 256
 		ifTrue: [self growWideCharacterBitmapTo: ((aCapacity - 1) // 8) - 32 + 1].
 	tally := 0.
@@ -161,9 +166,9 @@ BitmapCharacterSet >> remove: aCharacter ifAbsent: aBlock [
 
 	(asciiValue := aCharacter asciiValue) < 256
 		ifTrue: [
-			(byteCharacters at: asciiValue + 1) = 1
+			(byteCharacters at: asciiValue + 1)
 				ifFalse: [^ aBlock value].
-			byteCharacters at: asciiValue + 1 put: 0]
+			byteCharacters at: asciiValue + 1 put: false]
 		ifFalse: [| byteIndex byte bitmask |
 			byteIndex := (asciiValue // 8) - 32 + 1.
 			(wideCharacters isNil or: [byteIndex > wideCharacters size])
