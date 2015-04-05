@@ -68,6 +68,21 @@ BitmapCharacterSetTest >> testCapacity [
 ]
 
 { #category : #tests }
+BitmapCharacterSetTest >> testCopy [
+	| set copy |
+
+	set := self nonEmptyCharacterSet.
+	copy := set copy.
+	self
+		assert: set = copy;
+		deny: set == copy;
+		assert: set byteCharacters = copy byteCharacters;
+		deny: set byteCharacters == copy byteCharacters;
+		assert: set wideCharacters = copy wideCharacters;
+		deny: set wideCharacters == copy wideCharacters.
+]
+
+{ #category : #tests }
 BitmapCharacterSetTest >> testDo [
 	| set enumerated |
 
