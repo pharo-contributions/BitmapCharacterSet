@@ -1,5 +1,7 @@
 "
 This class implements a set of Character objects similar to CharacterSet and WideCharacterSet, but it uses a bitmap internally to test if wide (multibyte) characters belong to it rather than using a Dictionary like WideCharacterSet does. For byte characters, a simple 256-element Array is used, the same as with CharacterSet, which is faster but uses more memory.
+
+(used by XMLParser)
 "
 Class {
 	#name : #BitmapCharacterSet,
@@ -14,7 +16,8 @@ Class {
 
 { #category : #inspecting }
 BitmapCharacterSet class >> inspectorClass [
-	^ Set inspectorClass
+	"does not use Set class>>inspectorClass because it is incompatible"
+	super inspectorClass
 ]
 
 { #category : #'instance creation' }
@@ -29,6 +32,7 @@ BitmapCharacterSet class >> new: aCapacity [
 
 { #category : #'instance creation' }
 BitmapCharacterSet class >> newFrom: aCollection [
+	"for portability"
 	^ self new
 		addAll: aCollection;
 		yourself	
@@ -69,6 +73,11 @@ BitmapCharacterSet >> add: aCharacter [
 
 			wideCharacters at: byteIndex put: (byte bitOr: bitmask)].
 	^ aCharacter.
+]
+
+{ #category : #private }
+BitmapCharacterSet >> byteCharacters [
+	^ byteCharacters
 ]
 
 { #category : #accessing }
@@ -186,4 +195,9 @@ BitmapCharacterSet >> remove: aCharacter ifAbsent: aBlock [
 { #category : #accessing }
 BitmapCharacterSet >> size [
 	^ tally
+]
+
+{ #category : #private }
+BitmapCharacterSet >> wideCharacters [
+	^ wideCharacters
 ]
