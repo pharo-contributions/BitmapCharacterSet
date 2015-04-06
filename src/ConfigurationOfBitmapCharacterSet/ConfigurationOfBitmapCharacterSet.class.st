@@ -55,19 +55,24 @@ ConfigurationOfBitmapCharacterSet class >> catalogChangeLog [
 { #category : #catalog }
 ConfigurationOfBitmapCharacterSet class >> catalogDescription [
 
-^ 
-'BitmapCharacter is a special data structure.'
+^ 'BitmapCharacterSet is a set for characters that uses a bitmap for storing wide characters and an array of truth values for byte characters. Used by XMLParser.'
 ]
 
 { #category : #catalog }
 ConfigurationOfBitmapCharacterSet class >> catalogKeyClassesAndExample [
 
-	^ 'It is composed of a single class BitmapCharacter.'
+	^ 'It is composed of a single class BitmapCharacterSet.
+
+Example:
+[[[ 
+			BitmapCharacterSet newFrom: Character separators.
+			BitmapCharacterSet newFrom: Character allByteCharacters.
+]]]'
 ]
 
 { #category : #catalog }
 ConfigurationOfBitmapCharacterSet class >> catalogKeywords [
-	^ #(data structure HTML web)
+	^ #(collection set character unicode)
 	
 ]
 
@@ -188,7 +193,7 @@ ConfigurationOfBitmapCharacterSet >> project [
 ConfigurationOfBitmapCharacterSet >> stable: spec [
 	<symbolicVersion: #'stable'>
 
-	spec for: #'common' version: '1.1.3'.
+	spec for: #'common' version: '1.1.4'.
 	
 ]
 
@@ -260,5 +265,16 @@ ConfigurationOfBitmapCharacterSet >> version113: spec [
                 spec blessing: #release.
 			spec package: 'Collections-BitmapCharacterSet' with: 'Collections-BitmapCharacterSet-monty.10'.
 			spec package: 'Collections-Tests-BitmapCharacterSet' with: 'Collections-Tests-BitmapCharacterSet-Anonymous.6'
+                ].
+]
+
+{ #category : #versions }
+ConfigurationOfBitmapCharacterSet >> version114: spec [ 
+        <version: '1.1.4' imports: #('1.0-baseline')>
+
+        spec for: #common do: [
+                spec blessing: #release.
+			spec package: 'Collections-BitmapCharacterSet' with: 'Collections-BitmapCharacterSet-monty.11'.
+			spec package: 'Collections-Tests-BitmapCharacterSet' with: 'Collections-Tests-BitmapCharacterSet-monty.7'
                 ].
 ]
