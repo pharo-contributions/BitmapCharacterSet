@@ -17,7 +17,7 @@ Class {
 { #category : #inspecting }
 BitmapCharacterSet class >> inspectorClass [
 	"does not use Set class>>inspectorClass because it is incompatible"
-	super inspectorClass
+	^ Smalltalk tools inspectorClass
 ]
 
 { #category : #'instance creation' }
