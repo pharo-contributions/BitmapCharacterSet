@@ -20,6 +20,11 @@ BitmapCharacterSet class >> inspectorClass [
 	^ Smalltalk tools inspectorClass
 ]
 
+{ #category : #private }
+BitmapCharacterSet class >> lastCodePoint [
+	^ 16r10FFFF
+]
+
 { #category : #'instance creation' }
 BitmapCharacterSet class >> new [
 	^ self new: 256
@@ -96,14 +101,13 @@ BitmapCharacterSet >> do: aBlock [
 
 	wideCharacters
 		ifNil: [^ self].
-	1 to: wideCharacters size do: [:byteIndex |
-		0 to: 7 do: [:shiftIndex |
-			((wideCharacters at: byteIndex) bitAnd:
-				(16r80 bitShift: shiftIndex negated)) > 0
-				ifTrue: [
-					aBlock value:
-						(Character value:
-							(byteIndex - 1) * 8 + 256 + shiftIndex)]]].
+	1 to: wideCharacters size do: [:byteIndex | | byte |
+		(byte := wideCharacters at: byteIndex) > 0
+			ifTrue: [ | baseValue |
+				baseValue := (byteIndex - 1) * 8 + 256.
+				0 to: 7 do: [:shiftIndex |
+					(byte bitAnd: (16r80 bitShift: shiftIndex negated)) > 0
+						ifTrue: [aBlock value: (Character value: baseValue + shiftIndex)]]]].
 ]
 
 { #category : #private }
@@ -159,7 +163,7 @@ BitmapCharacterSet >> initialize: aCapacity [
 
 { #category : #private }
 BitmapCharacterSet >> lastCodePoint [
-	^ 16r10FFFF
+	^ self class lastCodePoint
 ]
 
 { #category : #copying }
