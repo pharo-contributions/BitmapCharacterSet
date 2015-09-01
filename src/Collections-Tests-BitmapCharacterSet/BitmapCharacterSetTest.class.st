@@ -1,28 +1,24 @@
 Class {
 	#name : #BitmapCharacterSetTest,
 	#superclass : #TestCase,
+	#instVars : [
+		'characters'
+	],
 	#category : #'Collections-Tests-BitmapCharacterSet'
 }
 
-{ #category : #accessing }
-BitmapCharacterSetTest >> absentCharacters [
-	"This returns the neighboring characters of each element of #characters, provided they
-	are not also elements of #characters"
+{ #category : #enumerating }
+BitmapCharacterSetTest >> absentCharactersDo: aBlock [
+	| previousValue |
 
-	| absentCharacters |
+	previousValue := 0.
+	self charactersDo: [:each |
+		previousValue + 1 to: each asciiValue - 1 do: [:i |
+			aBlock value: i asCharacter].
+		previousValue := each asciiValue].
 
-	absentCharacters := OrderedCollection new.
-	self characterCodes do: [:each | 
-		(each <= 0 or: [self characterCodes includes: each - 1])
-			ifFalse: [absentCharacters add: (Character value: each - 1)].
-		(self characterCodes includes: each + 1)
-			ifFalse: [absentCharacters add: (Character value: each + 1)]].
-	^ absentCharacters asArray.
-]
-
-{ #category : #accessing }
-BitmapCharacterSetTest >> characterCodes [
-	^ #(0 50 100 200 255 256 500 1000)
+	previousValue + 1 to: self lastCodePoint - 1 do: [:i |
+		aBlock value: i asCharacter].
 ]
 
 { #category : #accessing }
@@ -32,12 +28,37 @@ BitmapCharacterSetTest >> characterSetClass [
 
 { #category : #accessing }
 BitmapCharacterSetTest >> characters [
-	^ self characterCodes collect: [:each | Character value: each]
+	^ characters
+		ifNil: [| writeStream previousValue offset |
+			writeStream := (Array new: 250000) writeStream.
+			previousValue := 0.
+			writeStream nextPut: previousValue asCharacter.
+			offset := 1.
+			1 to: self lastCodePoint do: [:i |
+				previousValue + offset = i
+					ifTrue: [
+						writeStream nextPut: i asCharacter.
+						previousValue := i.
+						offset :=
+							offset = 8
+								ifTrue: [1]
+								ifFalse: [offset + 1]]].
+			characters := writeStream contents]
+]
+
+{ #category : #enumerating }
+BitmapCharacterSetTest >> charactersDo: aBlock [
+	self characters do: aBlock
 ]
 
 { #category : #accessing }
 BitmapCharacterSetTest >> emptyCharacterSet [
 	^ self characterSetClass new
+]
+
+{ #category : #accessing }
+BitmapCharacterSetTest >> lastCodePoint [
+	^ self characterSetClass lastCodePoint
 ]
 
 { #category : #accessing }
@@ -50,10 +71,13 @@ BitmapCharacterSetTest >> testAdd [
 	| set |
 
 	set := self emptyCharacterSet.
-	self
-		deny: (self characters anySatisfy: [:each | set includes: each]);
-		assert: (self characters allSatisfy: [:each | (set add: each) == each]);
-		assert: (self characters allSatisfy: [:each | set includes: each]).
+	self charactersDo: [:each |
+		self
+			deny: (set includes: each);
+			assert: (set add: each) = each;
+			assert: (set includes: each);
+			assert: (set add: each) = each;
+			assert: (set includes: each)].
 ]
 
 { #category : #tests }
@@ -61,10 +85,11 @@ BitmapCharacterSetTest >> testCapacity [
 	"Since the bitmap is allocated in bytes, the last byte can have excess capacity
 	even when a specific capacity is specified."
 
-	self
-		assert: (self characterSetClass new: 256) capacity = 256;
-		assert: (self characterSetClass new: 257) capacity = 264;
-		assert: (self characterSetClass new: 500) capacity = 504
+	self assert: (self characterSetClass new: 256) capacity = 256.
+	257 to: 264 do: [:i |
+		self assert: (self characterSetClass new: i) capacity = 264].
+	265 to: 272 do: [:i |
+		self assert: (self characterSetClass new: i) capacity = 272].
 ]
 
 { #category : #tests }
@@ -94,7 +119,11 @@ BitmapCharacterSetTest >> testDo [
 
 	set addAll: self characters.
 	set do: [:each | enumerated add: each].
-	self assert: enumerated asArray = self characters asArray.
+	self assert: enumerated size = self characters size.
+	enumerated
+		with: self characters
+		do: [:enumeratedChar :expectedChar |
+			self assert: enumeratedChar = expectedChar]
 ]
 
 { #category : #tests }
@@ -120,27 +149,27 @@ BitmapCharacterSetTest >> testIncludes [
 
 	set := self emptyCharacterSet.
 	self
-		deny: (self characters anySatisfy: [:each | set includes: each]);
-		deny: (self absentCharacters anySatisfy: [:each | set includes: each]).
+		charactersDo: [:each | self deny: (set includes: each)];
+		absentCharactersDo: [:each | self deny: (set includes: each)].
 
-	set addAll: self characters.
+	set := self nonEmptyCharacterSet.
 	self
-		assert: (self characters allSatisfy: [:each | set includes: each]);
-		deny: (self absentCharacters anySatisfy: [:each | set includes: each]).
+		charactersDo: [:each | self assert: (set includes: each)];
+		absentCharactersDo: [:each | self deny: (set includes: each)].
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testMaxCapacity [
-	| set lastCodePoint lastCodePointSize |
+	| unroundedMaxCapacity roundedMaxCapacity set |
 
-	lastCodePoint := self emptyCharacterSet lastCodePoint.
-	lastCodePointSize := lastCodePoint + 1.
+	unroundedMaxCapacity := self lastCodePoint + 1.
+	roundedMaxCapacity := unroundedMaxCapacity + (unroundedMaxCapacity \\ 8).
 
-	set := self characterSetClass new: lastCodePointSize.
-	self assert: set capacity = (lastCodePointSize + (lastCodePointSize \\ 8)).
+	set := self characterSetClass new: unroundedMaxCapacity.
+	self assert: set capacity = roundedMaxCapacity.
 
-	set := self characterSetClass new: lastCodePointSize + 8.
-	self assert: set capacity = (lastCodePointSize + (lastCodePointSize \\ 8)).
+	set := self characterSetClass new: unroundedMaxCapacity + 8.
+	self assert: set capacity = roundedMaxCapacity.
 ]
 
 { #category : #tests }
@@ -148,9 +177,8 @@ BitmapCharacterSetTest >> testNewFrom [
 	| set newSet |
 
 	set := self characterSetClass newFrom: self characters.
-	self
-		assert: set class == self characterSetClass;
-		assert: (self characters allSatisfy: [:each | set includes: each]).
+	self assert: set class == self characterSetClass.
+	self charactersDo: [:each | self assert: (set includes: each)].
 
 	newSet := self characterSetClass newFrom: set.
 	self
@@ -163,29 +191,31 @@ BitmapCharacterSetTest >> testRemoveIfAbsent [
 	| set |
 
 	set := self nonEmptyCharacterSet.
-	self
-		assert: (self absentCharacters allSatisfy: [:each | (set remove: each ifAbsent: [nil]) isNil]);
-		assert: (self characters allSatisfy: [:each | (set remove: each ifAbsent: [nil]) = each]);
-		deny: (self characters anySatisfy: [:each | set includes: each]);
-		assert: (self characters allSatisfy: [:each | (set remove: each ifAbsent: [nil]) isNil]).
+	self absentCharactersDo: [:each |
+		self assert: (set remove: each ifAbsent: [nil]) isNil].
+	self charactersDo: [:each |
+		self assert: (set remove: each ifAbsent: [nil]) = each.
+		self assert: (set remove: each ifAbsent: [nil]) isNil].
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testSize [
-	| set |
+	| set size |
 
 	set := self emptyCharacterSet.
-	self assert: set size isZero.
-
-	self characters doWithIndex: [:each :i |
+	size := 0.
+	self charactersDo: [:each |
+		self assert: set size = size.
 		set add: each.
-		self assert: set size = i].
+		size := size + 1.
+		self assert: set size = size.
 
-	"Adding the same characters again shouldn't alter the size"
-	set addAll: self characters.
-	self assert: set size = self characters size.
+		"Adding the same character shouldn't alter the size"
+		set add: each.
+		self assert: set size = size.].
 
-	self characters doWithIndex: [:each :i |
+	self charactersDo: [:each |
 		set remove: each.
-		self assert: set size = (self characters size - i)].	
+		size := size - 1.
+		self assert: set size = size].	
 ]
