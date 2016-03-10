@@ -58,7 +58,7 @@ BitmapCharacterSetTest >> emptyCharacterSet [
 
 { #category : #accessing }
 BitmapCharacterSetTest >> lastCodePoint [
-	^ self characterSetClass lastCodePoint
+	^ 16r10FFFF
 ]
 
 { #category : #accessing }
@@ -81,11 +81,32 @@ BitmapCharacterSetTest >> testAdd [
 ]
 
 { #category : #tests }
+BitmapCharacterSetTest >> testByteCharactersDo [
+	| set enumerated |
+
+	set := self emptyCharacterSet.
+	enumerated := OrderedCollection new.
+
+	set byteCharactersDo: [:each | enumerated addLast: each].
+	self assert: enumerated isEmpty.
+
+	set addAll: self characters.
+	set byteCharactersDo: [:each | enumerated addLast: each].
+	self assert: enumerated notEmpty.
+	enumerated withIndexDo: [:each :i |
+		self
+			assert: each asciiValue < 256;
+			assert: each = (self characters at: i)].
+]
+
+{ #category : #tests }
 BitmapCharacterSetTest >> testCapacity [
 	"Since the bitmap is allocated in bytes, the last byte can have excess capacity
 	even when a specific capacity is specified."
 
-	self assert: (self characterSetClass new: 256) capacity = 256.
+	self
+		assert: (self characterSetClass new: 0) capacity = 256;
+		assert: (self characterSetClass new: 256) capacity = 256.
 	257 to: 264 do: [:i |
 		self assert: (self characterSetClass new: i) capacity = 264].
 	265 to: 272 do: [:i |
@@ -114,11 +135,11 @@ BitmapCharacterSetTest >> testDo [
 	set := self emptyCharacterSet.
 	enumerated := OrderedCollection new.
 
-	set do: [:each | enumerated add: each].
+	set do: [:each | enumerated addLast: each].
 	self assert: enumerated isEmpty.
 
 	set addAll: self characters.
-	set do: [:each | enumerated add: each].
+	set do: [:each | enumerated addLast: each].
 	self assert: enumerated size = self characters size.
 	enumerated
 		with: self characters
@@ -136,11 +157,27 @@ BitmapCharacterSetTest >> testEquals [
 ]
 
 { #category : #tests }
+BitmapCharacterSetTest >> testHasWideCharacters [
+	| set |
+
+	set := self emptyCharacterSet.
+	self deny: set hasWideCharacters.
+
+	set add: 255 asCharacter.
+	self deny: set hasWideCharacters.
+
+	set add: 256 asCharacter.
+	self assert: set hasWideCharacters.
+
+	set remove: 256 asCharacter.
+	self deny: set hasWideCharacters.
+]
+
+{ #category : #tests }
 BitmapCharacterSetTest >> testHash [
 	self
 		assert: self emptyCharacterSet hash = self emptyCharacterSet hash;
-		assert: self nonEmptyCharacterSet hash = self nonEmptyCharacterSet hash;
-		deny: self emptyCharacterSet hash = self nonEmptyCharacterSet hash
+		assert: self nonEmptyCharacterSet hash = self nonEmptyCharacterSet hash
 ]
 
 { #category : #tests }
@@ -160,16 +197,32 @@ BitmapCharacterSetTest >> testIncludes [
 
 { #category : #tests }
 BitmapCharacterSetTest >> testMaxCapacity [
-	| unroundedMaxCapacity roundedMaxCapacity set |
+	| maxCapacity set |
 
-	unroundedMaxCapacity := self lastCodePoint + 1.
-	roundedMaxCapacity := unroundedMaxCapacity + (unroundedMaxCapacity \\ 8).
+	maxCapacity := self lastCodePoint + 1.
 
-	set := self characterSetClass new: unroundedMaxCapacity.
-	self assert: set capacity = roundedMaxCapacity.
+	set := self characterSetClass new: maxCapacity.
+	self assert: set capacity = maxCapacity.
 
-	set := self characterSetClass new: unroundedMaxCapacity + 8.
-	self assert: set capacity = roundedMaxCapacity.
+	set := self characterSetClass new: maxCapacity + 1.
+	self assert: set capacity = maxCapacity.
+
+	set := self characterSetClass new: maxCapacity * 2.
+	self assert: set capacity = maxCapacity.
+]
+
+{ #category : #tests }
+BitmapCharacterSetTest >> testMaxCharacter [
+	| set |
+
+	set := self emptyCharacterSet.
+	self
+		shouldnt: [set add: self lastCodePoint asCharacter]
+		raise: Error.
+	self assert: (set includes: self lastCodePoint asCharacter).
+	self
+		should: [set add: (self lastCodePoint + 1) asCharacter]
+		raise: Error.
 ]
 
 { #category : #tests }
@@ -184,6 +237,24 @@ BitmapCharacterSetTest >> testNewFrom [
 	self
 		assert: newSet = set;
 		deny: newSet == set.
+]
+
+{ #category : #tests }
+BitmapCharacterSetTest >> testRemoveAll [
+	| set capacity byteCharactersSize wideCharactersSize|
+
+	set := self nonEmptyCharacterSet.
+	capacity := set capacity.
+	byteCharactersSize := set byteCharacters size.
+	wideCharactersSize := set wideCharacters size.
+	self
+		assert: set removeAll == set;
+		assert: set size = 0;
+		assert: set capacity = capacity;
+		assert: set byteCharacters size = byteCharactersSize;
+		assert: (set byteCharacters allSatisfy: [:each | each = false]);
+		assert: set wideCharacters size = wideCharactersSize;
+		assert: (set wideCharacters allSatisfy: [:each | each = 0]).
 ]
 
 { #category : #tests }
@@ -218,4 +289,45 @@ BitmapCharacterSetTest >> testSize [
 		set remove: each.
 		size := size - 1.
 		self assert: set size = size].	
+]
+
+{ #category : #tests }
+BitmapCharacterSetTest >> testWideCharacters [
+	0 to: 7 do: [:i | | set character |
+		set := self characterSetClass new.
+		character := (256 + i) asCharacter.
+		self assert: set wideCharacters isNil.
+		set add: character.
+		self assert: set wideCharacters first = (16r80 bitShift: i negated).
+		set remove: character.
+		self assert: set wideCharacters first = 0].
+	0 to: 7 do: [:i | | set character |
+		set := self characterSetClass new.
+		character := (256 + 8 + i) asCharacter.
+		self assert: set wideCharacters isNil.
+		set add: character.
+		self assert: set wideCharacters second = (16r80 bitShift: i negated).
+		set remove: character.
+		self assert: set wideCharacters second = 0]
+]
+
+{ #category : #tests }
+BitmapCharacterSetTest >> testWideCharactersDo [
+	| set enumerated wideCharOffset |
+
+	set := self emptyCharacterSet.
+	enumerated := OrderedCollection new.
+
+	set wideCharactersDo: [:each | enumerated addLast: each].
+	self assert: enumerated isEmpty.
+
+	set addAll: self characters.
+	set wideCharactersDo: [:each | enumerated addLast: each].
+	self assert: enumerated notEmpty.
+	wideCharOffset :=
+		(self characters findFirst: [:each | each asciiValue >= 256]) - 1.
+	enumerated withIndexDo: [:each :i |
+		self
+			assert: each asciiValue >= 256;
+			assert: each = (self characters at: wideCharOffset + i)].
 ]
