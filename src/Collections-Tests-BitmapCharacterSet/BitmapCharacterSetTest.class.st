@@ -22,11 +22,6 @@ BitmapCharacterSetTest >> absentCharactersDo: aBlock [
 ]
 
 { #category : #accessing }
-BitmapCharacterSetTest >> characterSetClass [
-	^ BitmapCharacterSet
-]
-
-{ #category : #accessing }
 BitmapCharacterSetTest >> characters [
 	^ characters
 		ifNil: [| writeStream previousValue offset |
@@ -52,8 +47,8 @@ BitmapCharacterSetTest >> charactersDo: aBlock [
 ]
 
 { #category : #accessing }
-BitmapCharacterSetTest >> emptyCharacterSet [
-	^ self characterSetClass new
+BitmapCharacterSetTest >> emptySet [
+	^ self setClass new
 ]
 
 { #category : #accessing }
@@ -62,15 +57,35 @@ BitmapCharacterSetTest >> lastCodePoint [
 ]
 
 { #category : #accessing }
-BitmapCharacterSetTest >> nonEmptyCharacterSet [
-	^ self characterSetClass newFrom: self characters
+BitmapCharacterSetTest >> nonEmptySet [
+	^ self setClass newFrom: self characters
+]
+
+{ #category : #accessing }
+BitmapCharacterSetTest >> rangeCharacters [
+	^ 'abcdefghijklmnopqrstuvwxyz'
+]
+
+{ #category : #accessing }
+BitmapCharacterSetTest >> rangeStart [
+	^ self rangeCharacters first
+]
+
+{ #category : #accessing }
+BitmapCharacterSetTest >> rangeStop [
+	^ self rangeCharacters last
+]
+
+{ #category : #accessing }
+BitmapCharacterSetTest >> setClass [
+	^ BitmapCharacterSet
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testAdd [
 	| set |
 
-	set := self emptyCharacterSet.
+	set := self emptySet.
 	self charactersDo: [:each |
 		self
 			deny: (set includes: each);
@@ -81,10 +96,29 @@ BitmapCharacterSetTest >> testAdd [
 ]
 
 { #category : #tests }
+BitmapCharacterSetTest >> testAddRangeFromTo [
+	| set |
+
+	set := self emptySet.
+	self "empty range, because from > to"
+		assert: (set addRangeFrom: self rangeStop to: self rangeStart) == set;
+		assert: set isEmpty.
+
+	self
+		assert: (set addRangeFrom: self rangeStart to: self rangeStop) == set;
+		assert: set = (self setClass newFrom: self rangeCharacters).
+
+	set := self emptySet.
+	self
+		assert: (set addRangeFrom: self rangeStart to: self rangeStart) == set;
+		assert: set = (self setClass with: self rangeStart).
+]
+
+{ #category : #tests }
 BitmapCharacterSetTest >> testByteCharactersDo [
 	| set enumerated |
 
-	set := self emptyCharacterSet.
+	set := self emptySet.
 	enumerated := OrderedCollection new.
 
 	set byteCharactersDo: [:each | enumerated addLast: each].
@@ -105,19 +139,19 @@ BitmapCharacterSetTest >> testCapacity [
 	even when a specific capacity is specified."
 
 	self
-		assert: (self characterSetClass new: 0) capacity = 256;
-		assert: (self characterSetClass new: 256) capacity = 256.
+		assert: (self setClass new: 0) capacity = 256;
+		assert: (self setClass new: 256) capacity = 256.
 	257 to: 264 do: [:i |
-		self assert: (self characterSetClass new: i) capacity = 264].
+		self assert: (self setClass new: i) capacity = 264].
 	265 to: 272 do: [:i |
-		self assert: (self characterSetClass new: i) capacity = 272].
+		self assert: (self setClass new: i) capacity = 272].
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testCopy [
 	| set copy |
 
-	set := self nonEmptyCharacterSet.
+	set := self nonEmptySet.
 	copy := set copy.
 	self
 		assert: set = copy;
@@ -132,7 +166,7 @@ BitmapCharacterSetTest >> testCopy [
 BitmapCharacterSetTest >> testDo [
 	| set enumerated |
 
-	set := self emptyCharacterSet.
+	set := self emptySet.
 	enumerated := OrderedCollection new.
 
 	set do: [:each | enumerated addLast: each].
@@ -150,17 +184,17 @@ BitmapCharacterSetTest >> testDo [
 { #category : #tests }
 BitmapCharacterSetTest >> testEquals [
 	self
-		assert: self emptyCharacterSet = self emptyCharacterSet;
-		assert: self nonEmptyCharacterSet = self nonEmptyCharacterSet;
-		deny: self emptyCharacterSet = self nonEmptyCharacterSet;
-		deny: self nonEmptyCharacterSet = self emptyCharacterSet
+		assert: self emptySet = self emptySet;
+		assert: self nonEmptySet = self nonEmptySet;
+		deny: self emptySet = self nonEmptySet;
+		deny: self nonEmptySet = self emptySet
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testHasWideCharacters [
 	| set |
 
-	set := self emptyCharacterSet.
+	set := self emptySet.
 	self deny: set hasWideCharacters.
 
 	set add: 255 asCharacter.
@@ -176,23 +210,38 @@ BitmapCharacterSetTest >> testHasWideCharacters [
 { #category : #tests }
 BitmapCharacterSetTest >> testHash [
 	self
-		assert: self emptyCharacterSet hash = self emptyCharacterSet hash;
-		assert: self nonEmptyCharacterSet hash = self nonEmptyCharacterSet hash
+		assert: self emptySet hash = self emptySet hash;
+		assert: self nonEmptySet hash = self nonEmptySet hash
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testIncludes [
 	| set |
 
-	set := self emptyCharacterSet.
+	set := self emptySet.
 	self
 		charactersDo: [:each | self deny: (set includes: each)];
 		absentCharactersDo: [:each | self deny: (set includes: each)].
 
-	set := self nonEmptyCharacterSet.
+	set := self nonEmptySet.
 	self
 		charactersDo: [:each | self assert: (set includes: each)];
 		absentCharactersDo: [:each | self deny: (set includes: each)].
+]
+
+{ #category : #tests }
+BitmapCharacterSetTest >> testIncludesRangeFromTo [
+	| set |
+
+	set := self emptySet.
+	self rangeCharacters do: [:each |
+		self
+			deny: (set includesRangeFrom: self rangeStart to: self rangeStop);
+			assert: (set includesRangeFrom: self rangeStop to: self rangeStart).
+		set add: each].
+	self
+		assert: (set includesRangeFrom: self rangeStart to: self rangeStop);
+		assert: (set includesRangeFrom: self rangeStop to: self rangeStart).
 ]
 
 { #category : #tests }
@@ -201,13 +250,13 @@ BitmapCharacterSetTest >> testMaxCapacity [
 
 	maxCapacity := self lastCodePoint + 1.
 
-	set := self characterSetClass new: maxCapacity.
+	set := self setClass new: maxCapacity.
 	self assert: set capacity = maxCapacity.
 
-	set := self characterSetClass new: maxCapacity + 1.
+	set := self setClass new: maxCapacity + 1.
 	self assert: set capacity = maxCapacity.
 
-	set := self characterSetClass new: maxCapacity * 2.
+	set := self setClass new: maxCapacity * 2.
 	self assert: set capacity = maxCapacity.
 ]
 
@@ -215,7 +264,7 @@ BitmapCharacterSetTest >> testMaxCapacity [
 BitmapCharacterSetTest >> testMaxCharacter [
 	| set |
 
-	set := self emptyCharacterSet.
+	set := self emptySet.
 	self
 		shouldnt: [set add: self lastCodePoint asCharacter]
 		raise: Error.
@@ -229,11 +278,11 @@ BitmapCharacterSetTest >> testMaxCharacter [
 BitmapCharacterSetTest >> testNewFrom [
 	| set newSet |
 
-	set := self characterSetClass newFrom: self characters.
-	self assert: set class == self characterSetClass.
+	set := self setClass newFrom: self characters.
+	self assert: set class == self setClass.
 	self charactersDo: [:each | self assert: (set includes: each)].
 
-	newSet := self characterSetClass newFrom: set.
+	newSet := self setClass newFrom: set.
 	self
 		assert: newSet = set;
 		deny: newSet == set.
@@ -243,7 +292,7 @@ BitmapCharacterSetTest >> testNewFrom [
 BitmapCharacterSetTest >> testRemoveAll [
 	| set capacity byteCharactersSize wideCharactersSize|
 
-	set := self nonEmptyCharacterSet.
+	set := self nonEmptySet.
 	capacity := set capacity.
 	byteCharactersSize := set byteCharacters size.
 	wideCharactersSize := set wideCharacters size.
@@ -261,7 +310,7 @@ BitmapCharacterSetTest >> testRemoveAll [
 BitmapCharacterSetTest >> testRemoveIfAbsent [
 	| set |
 
-	set := self nonEmptyCharacterSet.
+	set := self nonEmptySet.
 	self absentCharactersDo: [:each |
 		self assert: (set remove: each ifAbsent: [nil]) isNil].
 	self charactersDo: [:each |
@@ -270,10 +319,36 @@ BitmapCharacterSetTest >> testRemoveIfAbsent [
 ]
 
 { #category : #tests }
+BitmapCharacterSetTest >> testRemoveRangeFromTo [
+	| set |
+
+	set := self emptySet.
+	self "empty range, because from > to"
+		assert: (set removeRangeFrom: self rangeStop to: self rangeStart) == set;
+		assert: set isEmpty.
+
+	set addRangeFrom: self rangeStart to: self rangeStop.
+	self
+		assert: (set removeRangeFrom: self rangeStart to: self rangeStop) == set;
+		assert: set isEmpty.
+
+	self rangeCharacters do: [:each |
+		set := self setClass newFrom: self rangeCharacters.
+		self
+			assert: (set removeRangeFrom: each to: each) == set;
+			assert:
+				set =
+					(self setClass newFrom: (self rangeCharacters copyWithout: each)).
+		self
+			should: [set removeRangeFrom: each to: each]
+			raise: Error].
+]
+
+{ #category : #tests }
 BitmapCharacterSetTest >> testSize [
 	| set size |
 
-	set := self emptyCharacterSet.
+	set := self emptySet.
 	size := 0.
 	self charactersDo: [:each |
 		self assert: set size = size.
@@ -294,7 +369,7 @@ BitmapCharacterSetTest >> testSize [
 { #category : #tests }
 BitmapCharacterSetTest >> testWideCharacters [
 	0 to: 7 do: [:i | | set character |
-		set := self characterSetClass new.
+		set := self setClass new.
 		character := (256 + i) asCharacter.
 		self assert: set wideCharacters isNil.
 		set add: character.
@@ -302,7 +377,7 @@ BitmapCharacterSetTest >> testWideCharacters [
 		set remove: character.
 		self assert: set wideCharacters first = 0].
 	0 to: 7 do: [:i | | set character |
-		set := self characterSetClass new.
+		set := self setClass new.
 		character := (256 + 8 + i) asCharacter.
 		self assert: set wideCharacters isNil.
 		set add: character.
@@ -315,7 +390,7 @@ BitmapCharacterSetTest >> testWideCharacters [
 BitmapCharacterSetTest >> testWideCharactersDo [
 	| set enumerated wideCharOffset |
 
-	set := self emptyCharacterSet.
+	set := self emptySet.
 	enumerated := OrderedCollection new.
 
 	set wideCharactersDo: [:each | enumerated addLast: each].
