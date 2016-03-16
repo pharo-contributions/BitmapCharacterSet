@@ -1,7 +1,7 @@
 "
 This class implements a set of Character objects similar to CharacterSet and WideCharacterSet, but it uses a bitmap internally to test if wide (multibyte) characters belong to it rather than using a Dictionary like WideCharacterSet does. For byte characters, a simple 256-element Array is used, the same as with CharacterSet, which is faster but uses more memory.
 
-(used by XMLParser)
+(Used by and heavily optimized for XMLParser; please refactor carefully)
 "
 Class {
 	#name : #BitmapCharacterSet,
@@ -32,7 +32,7 @@ BitmapCharacterSet class >> new: aCapacity [
 
 { #category : #'instance creation' }
 BitmapCharacterSet class >> newFrom: aCollection [
-	"for portability"
+	"for GS portability"
 	^ self new
 		addAll: aCollection;
 		yourself	
@@ -80,6 +80,19 @@ BitmapCharacterSet >> add: aCharacter [
 				at: byteIndex
 				put: (byte bitOr: bitmask)].
 	^ aCharacter.
+]
+
+{ #category : #adding }
+BitmapCharacterSet >> addRangeFrom: aStartCharacter to: aStopCharacter [
+	"Adds character range from aStartCharacter to aStopCharacter inclusive
+	or none if aStartCharacter > aStopCharacter. Returns self to avoid
+	creating a temp collection of the added characters."
+
+	"chars don't support to:do: (compiled inline) and using to: and do:
+	separately needlessly creates a (possibly large) temp array"
+	aStartCharacter asciiValue
+		to: aStopCharacter asciiValue
+		do: [:i | self add: (Character value: i)]
 ]
 
 { #category : #private }
@@ -153,6 +166,21 @@ BitmapCharacterSet >> includes: aCharacter [
 				(16r80 bitShift: 0 - (asciiValue \\ 8))) > 0]
 ]
 
+{ #category : #testing }
+BitmapCharacterSet >> includesRangeFrom: aStartCharacter to: aStopCharacter [
+	"Tests for character range from aStartCharacter to aStopCharacter
+	inclusive. Always returns true if aStartCharacter > aStopCharacter."
+
+	"chars don't support to:do: (compiled inline) and using to: and do:
+	separately needlessly creates a (possibly large) temp array"
+	aStartCharacter asciiValue
+		to: aStopCharacter asciiValue
+		do: [:i |
+			(self includes: (Character value: i))
+				ifFalse: [^ false]].
+	^ true.
+]
+
 { #category : #initialization }
 BitmapCharacterSet >> initialize: aCapacity [
 	byteCharacters := Array new: 256 withAll: false.
@@ -221,6 +249,19 @@ BitmapCharacterSet >> removeAll [
 					at: i
 					put: 0]].
 	tally := 0.
+]
+
+{ #category : #removing }
+BitmapCharacterSet >> removeRangeFrom: aStartCharacter to: aStopCharacter [
+	"Removes character range from aStartCharacter to aStopCharacter inclusive
+	or none if aStartCharacter > aStopCharacter. Returns self to avoid
+	creating a temp collection of the removed characters."
+
+	"chars don't support to:do: (compiled inline) and using to: and do:
+	separately needlessly creates a (possibly large) temp array"
+	aStartCharacter asciiValue
+		to: aStopCharacter asciiValue
+		do: [:i | self remove: (Character value: i)]
 ]
 
 { #category : #accessing }
