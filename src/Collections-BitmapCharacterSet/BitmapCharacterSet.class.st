@@ -63,16 +63,21 @@ BitmapCharacterSet >> add: aCharacter [
 				at: asciiValue + 1
 				put: true]
 		ifFalse: [| byteIndex byte bitmask |
-			"256 // 8 - 31 = 1 (first index), (256 + 8) // 8 - 31 = 2 (second), etc"
-			byteIndex := asciiValue // 8 - 31.
+			"256 // 8 - 31 = 1 (first index), (256 + 8) // 8 - 31 = 2 (second), etc
+			(with 'bitShift: -3' used over '// 8' for speed)"
+			byteIndex := (asciiValue bitShift: -3) - 31.
 			(wideCharacters isNil
 				or: [byteIndex > wideCharacters size])
 				ifTrue: [self growWideCharacterBitmapTo: (byteIndex * 1.5) asInteger].
 
+			"raises an error if asciiValue > 16r10FFFF"
 			byte := wideCharacters at: byteIndex.
-			bitmask := 16r80 bitShift: 0 - (asciiValue \\ 8).
+
+			"for the byte bitmask, left shift 1 by 7 - (asciiValue mod 8)
+			(with 'bitAnd: 7' used over '\\ 8' for speed)"
+			bitmask := 16r01 bitShift: 7 - (asciiValue bitAnd: 16r07).
 			
-			"Only increment the tally if the character is not already present"
+			"increment the tally if the character is not already present"
 			(byte bitAnd: bitmask) > 0
 				ifFalse: [tally := tally + 1].
 
@@ -159,11 +164,16 @@ BitmapCharacterSet >> includes: aCharacter [
 		ifFalse: [| byteIndex |
 			wideCharacters
 				ifNil: [^ false].
-			"256 // 8 - 31 = 1 (first index), (256 + 8) // 8 - 31 = 2 (second), etc"
-			(byteIndex := asciiValue // 8 - 31) > wideCharacters size
+
+			"256 // 8 - 31 = 1 (first index), (256 + 8) // 8 - 31 = 2 (second), etc
+			(with 'bitShift: -3' used over '// 8' for speed)"
+			(byteIndex := (asciiValue bitShift: -3) - 31) > wideCharacters size
 				ifTrue: [^ false].
+
+			"for the byte bitmask, left shift 1 by 7 - (asciiValue mod 8)
+			(with 'bitAnd: 7' used over '\\ 8' for speed)"
 			^ ((wideCharacters at: byteIndex) bitAnd:
-				(16r80 bitShift: 0 - (asciiValue \\ 8))) > 0]
+				(16r01 bitShift: 7 - (asciiValue bitAnd: 16r07))) > 0]
 ]
 
 { #category : #testing }
@@ -187,14 +197,15 @@ BitmapCharacterSet >> initialize: aCapacity [
 	aCapacity > 256
 		ifTrue: [
 			"(257 - 1) // 8 - 31 = 1 (first byte),
-			(257 + 8 - 1) // 8 - 31 = 2 (second byte), etc"
-			self growWideCharacterBitmapTo: (aCapacity - 1) // 8 - 31].
+			(257 + 8 - 1) // 8 - 31 = 2 (second byte), etc
+			(with 'bitShift: -3' used over '// 8' for speed)"
+			self growWideCharacterBitmapTo: ((aCapacity - 1) bitShift: -3) - 31].
 	tally := 0.
 ]
 
 { #category : #private }
 BitmapCharacterSet >> maxWideCharactersSize [
-	^ 139232 "16r10FFFF // 8 - 31"
+	^ 139232 "(16r10FFFF bitShift: -3) - 31"
 ]
 
 { #category : #copying }
@@ -217,13 +228,17 @@ BitmapCharacterSet >> remove: aCharacter ifAbsent: aBlock [
 				at: asciiValue + 1
 				put: false]
 		ifFalse: [| byteIndex byte bitmask |
-			"256 // 8 - 31 = 1 (first index), (256 + 8) // 8 - 31 = 2 (second), etc"
-			byteIndex := asciiValue // 8 - 31.
-			(wideCharacters isNil
-				or: [byteIndex > wideCharacters size])
+			wideCharacters
+				ifNil: [^ aBlock value].
+	
+			"256 // 8 - 31 = 1 (first index), (256 + 8) // 8 - 31 = 2 (second), etc
+			(with 'bitShift: -3' used over '// 8' for speed)"
+			(byteIndex := (asciiValue bitShift: -3) - 31) > wideCharacters size
 				ifTrue: [^ aBlock value].
 
-			bitmask := 16r80 bitShift: 0 - (asciiValue \\ 8).
+			"for the byte bitmask, left shift 1 by 7 - (asciiValue mod 8)
+			(with 'bitAnd: 7' used over '\\ 8' for speed)"
+			bitmask := 16r01 bitShift: 7 - (asciiValue bitAnd: 16r07).
 			((byte := wideCharacters at: byteIndex) bitAnd: bitmask) > 0
 				ifFalse: [^ aBlock value].
 
