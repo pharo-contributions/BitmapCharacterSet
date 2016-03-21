@@ -73,9 +73,9 @@ BitmapCharacterSet >> add: aCharacter [
 			"raises an error if asciiValue > 16r10FFFF"
 			byte := wideCharacters at: byteIndex.
 
-			"for the byte bitmask, left shift 1 by 7 - (asciiValue mod 8)
+			"for the byte bitmask, left shift 1 by 7 - (asciiValue \\ 8)
 			(with 'bitAnd: 7' used over '\\ 8' for speed)"
-			bitmask := 16r01 bitShift: 7 - (asciiValue bitAnd: 16r07).
+			bitmask := 1 bitShift: 7 - (asciiValue bitAnd: 7).
 			
 			"increment the tally if the character is not already present"
 			(byte bitAnd: bitmask) > 0
@@ -170,10 +170,10 @@ BitmapCharacterSet >> includes: aCharacter [
 			(byteIndex := (asciiValue bitShift: -3) - 31) > wideCharacters size
 				ifTrue: [^ false].
 
-			"for the byte bitmask, left shift 1 by 7 - (asciiValue mod 8)
+			"for the byte bitmask, left shift 1 by 7 - (asciiValue \\ 8)
 			(with 'bitAnd: 7' used over '\\ 8' for speed)"
 			^ ((wideCharacters at: byteIndex) bitAnd:
-				(16r01 bitShift: 7 - (asciiValue bitAnd: 16r07))) > 0]
+				(1 bitShift: 7 - (asciiValue bitAnd: 7))) > 0]
 ]
 
 { #category : #testing }
@@ -236,9 +236,9 @@ BitmapCharacterSet >> remove: aCharacter ifAbsent: aBlock [
 			(byteIndex := (asciiValue bitShift: -3) - 31) > wideCharacters size
 				ifTrue: [^ aBlock value].
 
-			"for the byte bitmask, left shift 1 by 7 - (asciiValue mod 8)
+			"for the byte bitmask, left shift 1 by 7 - (asciiValue \\ 8)
 			(with 'bitAnd: 7' used over '\\ 8' for speed)"
-			bitmask := 16r01 bitShift: 7 - (asciiValue bitAnd: 16r07).
+			bitmask := 1 bitShift: 7 - (asciiValue bitAnd: 7).
 			((byte := wideCharacters at: byteIndex) bitAnd: bitmask) > 0
 				ifFalse: [^ aBlock value].
 
@@ -303,7 +303,7 @@ BitmapCharacterSet >> wideCharactersDo: aBlock [
 		(byte := wideCharacters at: byteIndex) > 0
 			ifTrue: [
 				0 to: 7 do: [:shiftIndex |
-					(byte bitAnd: (16r80 bitShift: 0 - shiftIndex)) > 0
+					(byte bitAnd: (1 bitShift: 7 - shiftIndex)) > 0
 						ifTrue: [
 							aBlock value:
 								(Character value: baseValue + shiftIndex)]]]].
