@@ -44,7 +44,7 @@ BitmapCharacterSet >> = anObject [
 		ifTrue: [^ true].
 
 	(self class == anObject class
-		and: [tally = anObject size])
+		and: [self size = anObject size])
 		ifFalse: [^ false].
 
 	^ self allSatisfy: [:each | anObject includes: each].
@@ -118,6 +118,18 @@ BitmapCharacterSet >> capacity [
 		(wideCharacters
 			ifNil: [0]
 			ifNotNil: [wideCharacters size * 8]).
+]
+
+{ #category : #converting }
+BitmapCharacterSet >> complement [
+	| copy |
+
+	copy := self copyEmpty.
+	0 to: 16r10FFFF do: [:i | | character |
+		character := (Character value: i).
+		(self includes: character)
+			ifFalse: [copy add: character]].
+	^ copy.
 ]
 
 { #category : #enumerating }
