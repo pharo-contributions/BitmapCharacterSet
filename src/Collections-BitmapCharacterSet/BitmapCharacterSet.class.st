@@ -43,11 +43,14 @@ BitmapCharacterSet >> = anObject [
 	self == anObject
 		ifTrue: [^ true].
 
-	(self class == anObject class
+	(self species == anObject species
 		and: [self size = anObject size])
 		ifFalse: [^ false].
 
-	^ self allSatisfy: [:each | anObject includes: each].
+	self do: [:each |
+		(anObject includes: each)
+			ifFalse: [^ false]].
+	^ true.
 ]
 
 { #category : #adding }
@@ -163,7 +166,7 @@ BitmapCharacterSet >> hasWideCharacters [
 
 { #category : #comparing }
 BitmapCharacterSet >> hash [
-	^ self class hash bitXor: self size hash
+	^ self species hash bitXor: self size hash
 ]
 
 { #category : #testing }
