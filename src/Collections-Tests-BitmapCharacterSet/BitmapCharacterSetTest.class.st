@@ -21,6 +21,18 @@ BitmapCharacterSetTest >> absentCharactersDo: aBlock [
 		aBlock value: i asCharacter].
 ]
 
+{ #category : #asserting }
+BitmapCharacterSetTest >> assertSet: aFirstSet copiedFrom: aSecondSet equals: aThirdSet [
+	self
+		deny: aFirstSet == aSecondSet;
+		deny: aFirstSet byteCharacters == aSecondSet byteCharacters.
+	(aFirstSet wideCharacters notNil
+		or: [aSecondSet wideCharacters notNil])
+		ifTrue: [self deny: aFirstSet wideCharacters == aSecondSet wideCharacters].
+	
+	self assert: aFirstSet = aThirdSet.
+]
+
 { #category : #accessing }
 BitmapCharacterSetTest >> characters [
 	^ characters
@@ -168,17 +180,36 @@ BitmapCharacterSetTest >> testComplement [
 
 { #category : #tests }
 BitmapCharacterSetTest >> testCopy [
-	| set copy |
+	| set |
+
+	set := self emptySet.
+	self
+		assertSet: set copy
+		copiedFrom: set
+		equals: self emptySet.
 
 	set := self nonEmptySet.
-	copy := set copy.
 	self
-		assert: set = copy;
-		deny: set == copy;
-		assert: set byteCharacters = copy byteCharacters;
-		deny: set byteCharacters == copy byteCharacters;
-		assert: set wideCharacters = copy wideCharacters;
-		deny: set wideCharacters == copy wideCharacters.
+		assertSet: set copy
+		copiedFrom: set
+		equals: self nonEmptySet.
+]
+
+{ #category : #tests }
+BitmapCharacterSetTest >> testCopyEmpty [
+	| set |
+
+	set := self emptySet.
+	self
+		assertSet: set copyEmpty
+		copiedFrom: set
+		equals: self emptySet.
+
+	set := self nonEmptySet.
+	self
+		assertSet: set copyEmpty
+		copiedFrom: set
+		equals: self emptySet.
 ]
 
 { #category : #tests }
