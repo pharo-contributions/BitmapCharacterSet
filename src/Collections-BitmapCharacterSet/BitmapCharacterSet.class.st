@@ -135,6 +135,12 @@ BitmapCharacterSet >> complement [
 	^ copy.
 ]
 
+{ #category : #copying }
+BitmapCharacterSet >> copyEmpty [
+	"reimplemented for GS and Squeak portability"
+	^ self species new: self capacity
+]
+
 { #category : #enumerating }
 BitmapCharacterSet >> do: aBlock [
 	self
