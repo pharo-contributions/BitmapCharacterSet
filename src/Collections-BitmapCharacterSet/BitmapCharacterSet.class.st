@@ -38,6 +38,14 @@ BitmapCharacterSet class >> newFrom: aCollection [
 		yourself	
 ]
 
+{ #category : #copying }
+BitmapCharacterSet >> , aCollection [
+	"reimplemented for GS compatibility"
+	^ self copy
+		addAll: aCollection;
+		yourself
+]
+
 { #category : #comparing }
 BitmapCharacterSet >> = anObject [
 	self == anObject
@@ -137,7 +145,7 @@ BitmapCharacterSet >> complement [
 
 { #category : #copying }
 BitmapCharacterSet >> copyEmpty [
-	"reimplemented for GS and Squeak portability"
+	"reimplemented for GS and Squeak compatibility"
 	^ self species new: self capacity
 ]
 
