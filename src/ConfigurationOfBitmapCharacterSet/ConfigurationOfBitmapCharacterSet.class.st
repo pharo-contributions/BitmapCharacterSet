@@ -397,7 +397,7 @@ ConfigurationOfBitmapCharacterSet >> version124: spec [
 
         spec for: #common do: [
                 spec blessing: #release.
-			spec package: 'Collections-BitmapCharacterSet' with: 'Collections-BitmapCharacterSet-monty.21'.
+			spec package: 'Collections-BitmapCharacterSet' with: 'Collections-BitmapCharacterSet-monty.22'.
 			spec package: 'Collections-Tests-BitmapCharacterSet' with: 'Collections-Tests-BitmapCharacterSet-monty.13'
                 ].
 ]
