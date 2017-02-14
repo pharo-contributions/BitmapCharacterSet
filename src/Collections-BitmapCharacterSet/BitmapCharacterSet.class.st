@@ -232,6 +232,12 @@ BitmapCharacterSet >> initialize: aCapacity [
 	tally := 0.
 ]
 
+{ #category : #testing }
+BitmapCharacterSet >> isEmpty [
+	"Squeak's Collection>>#isEmpty is inefficient"
+	^ self size = 0
+]
+
 { #category : #private }
 BitmapCharacterSet >> maxWideCharactersSize [
 	^ 139232 "(16r10FFFF bitShift: -3) - 31"
