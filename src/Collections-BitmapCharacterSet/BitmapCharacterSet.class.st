@@ -77,7 +77,7 @@ BitmapCharacterSet >> add: aCharacter [
 			"256 // 8 - 31 = 1 (first index), (256 + 8) // 8 - 31 = 2 (second), etc
 			(with 'bitShift: -3' used over '// 8' for speed)"
 			byteIndex := (asciiValue bitShift: -3) - 31.
-			(wideCharacters isNil
+			(wideCharacters == nil
 				or: [byteIndex > wideCharacters size])
 				ifTrue: [self growWideCharacterBitmapTo: (byteIndex * 1.5) asInteger].
 
@@ -89,8 +89,8 @@ BitmapCharacterSet >> add: aCharacter [
 			bitmask := 1 bitShift: 7 - (asciiValue bitAnd: 7).
 			
 			"increment the tally if the character is not already present"
-			(byte bitAnd: bitmask) > 0
-				ifFalse: [tally := tally + 1].
+			(byte bitAnd: bitmask) == 0
+				ifTrue: [tally := tally + 1].
 
 			wideCharacters
 				at: byteIndex
@@ -274,8 +274,8 @@ BitmapCharacterSet >> remove: aCharacter ifAbsent: aBlock [
 			"for the byte bitmask, left shift 1 by 7 - (asciiValue \\ 8)
 			(with 'bitAnd: 7' used over '\\ 8' for speed)"
 			bitmask := 1 bitShift: 7 - (asciiValue bitAnd: 7).
-			((byte := wideCharacters at: byteIndex) bitAnd: bitmask) > 0
-				ifFalse: [^ aBlock value].
+			((byte := wideCharacters at: byteIndex) bitAnd: bitmask) == 0
+				ifTrue: [^ aBlock value].
 
 			wideCharacters
 				at: byteIndex
@@ -335,11 +335,11 @@ BitmapCharacterSet >> wideCharactersDo: aBlock [
 	baseValue := 248. "256 - 8"
 	1 to: wideCharacters size do: [:byteIndex | | byte |
 		baseValue := baseValue + 8. "248 + 8 = 256, 256 + 8 = 264, etc"
-		(byte := wideCharacters at: byteIndex) > 0
-			ifTrue: [
+		(byte := wideCharacters at: byteIndex) == 0
+			ifFalse: [
 				0 to: 7 do: [:shiftIndex |
-					(byte bitAnd: (1 bitShift: 7 - shiftIndex)) > 0
-						ifTrue: [
+					(byte bitAnd: (1 bitShift: 7 - shiftIndex)) == 0
+						ifFalse: [
 							aBlock value:
 								(Character value: baseValue + shiftIndex)]]]].
 ]
