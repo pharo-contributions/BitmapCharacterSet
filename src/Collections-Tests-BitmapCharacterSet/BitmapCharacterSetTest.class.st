@@ -383,10 +383,19 @@ BitmapCharacterSetTest >> testRemoveIfAbsent [
 
 	set := self nonEmptySet.
 	self absentCharactersDo: [:each |
-		self assert: (set remove: each ifAbsent: [nil]) isNil].
+		self assert:
+			(set
+				remove: each
+				ifAbsent: [#absent]) = #absent].
 	self charactersDo: [:each |
-		self assert: (set remove: each ifAbsent: [nil]) = each.
-		self assert: (set remove: each ifAbsent: [nil]) isNil].
+		self assert:
+			(set
+				remove: each
+				ifAbsent: [self fail]) = each.
+		self assert:
+			(set
+				remove: each
+				ifAbsent: [#absent]) = #absent].
 ]
 
 { #category : #tests }
