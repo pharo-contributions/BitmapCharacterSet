@@ -40,7 +40,7 @@ BitmapCharacterSet class >> newFrom: aCollection [
 
 { #category : #copying }
 BitmapCharacterSet >> , aCollection [
-	"reimplemented for GS compatibility"
+	"GS doesn't define #, for non-Sequenceable collections"
 	^ self copy
 		addAll: aCollection;
 		yourself
@@ -180,7 +180,12 @@ BitmapCharacterSet >> hasWideCharacters [
 
 { #category : #comparing }
 BitmapCharacterSet >> hash [
-	^ self species hash bitXor: self size hash
+	| hash |
+
+	hash := self species hash.
+	self byteCharactersDo: [:each |
+		hash := hash bitXor: each hash].
+	^ hash bitXor: self size hash.
 ]
 
 { #category : #testing }
