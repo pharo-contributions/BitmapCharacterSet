@@ -162,7 +162,7 @@ ConfigurationOfBitmapCharacterSet class >> unloadMetacello [
 	Smalltalk at: #ConfigurationOfMetacello ifPresent: [:cls | cls unloadMetacello ]
 ]
 
-{ #category : #baselines }
+{ #category : #'baselines - outdated' }
 ConfigurationOfBitmapCharacterSet >> baseline100: spec [ 
 	<version: '1.0-baseline'>
 	
@@ -181,11 +181,23 @@ ConfigurationOfBitmapCharacterSet >> baseline100: spec [
 			group: 'Tests' with: #('Collections-Tests-BitmapCharacterSet'). ].
 ]
 
+{ #category : #versions }
+ConfigurationOfBitmapCharacterSet >> dev: spec [ 
+	<version: 'dev'>
+
+	spec for: #'common' do: [ 
+		spec
+			baseline: 'BitmapCharacterSet' with: [ 
+				spec 
+					className: 'BaselineOfBitmapCharacterSet';
+					repository: 'github://pharo-contributions/BitmapCharacterSet:master/src' ]]
+]
+
 { #category : #'symbolic versions' }
 ConfigurationOfBitmapCharacterSet >> development: spec [
 	<symbolicVersion: #'development'>
 
-	spec for: #'common' version: '1.0-baseline'
+	spec for: #'common' version: 'dev'
 
 ]
 
@@ -206,7 +218,13 @@ ConfigurationOfBitmapCharacterSet >> project [
 ConfigurationOfBitmapCharacterSet >> stable: spec [
 	<symbolicVersion: #'stable'>
 
-	spec for: #'common' version: '1.2.6'.
+	"Old STHub version"
+	spec for: #'pharo4.x' version: '1.2.6'.
+	spec for: #'pharo5.x' version: '1.2.6'.
+	spec for: #'pharo6.x' version: '1.2.6'.	
+		
+	"GitHub starting with Pharo 7 onwards"	
+	spec for: #'common' version: '1.2.7'.
 	
 ]
 
@@ -422,4 +440,16 @@ ConfigurationOfBitmapCharacterSet >> version126: spec [
 			spec package: 'Collections-BitmapCharacterSet' with: 'Collections-BitmapCharacterSet-monty.25'.
 			spec package: 'Collections-Tests-BitmapCharacterSet' with: 'Collections-Tests-BitmapCharacterSet-monty.14'
                 ].
+]
+
+{ #category : #versions }
+ConfigurationOfBitmapCharacterSet >> version127: spec [ 
+	<version: '1.2.7'>
+
+	spec for: #'common' do: [ 
+		spec
+			baseline: 'BitmapCharacterSet' with: [ 
+				spec 
+					className: 'BaselineOfBitmapCharacterSet';
+					repository: 'github://pharo-contributions/BitmapCharacterSet:1.2.7/src' ]]
 ]
