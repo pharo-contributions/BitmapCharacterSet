@@ -7,7 +7,7 @@ Class {
 	#instVars : [
 		'characters'
 	],
-	#category : #'Collections-Tests-BitmapCharacterSet'
+	#category : #'Collections-BitmapCharacterSet-Tests'
 }
 
 { #category : #enumerating }
