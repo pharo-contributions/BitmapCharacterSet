@@ -1,0 +1,10 @@
+SmalltalkCISpec {
+	#loading : [
+		SCIMetacelloLoadSpec {
+			#baseline : 'BitmapCharacterSet',
+			#directory : 'src',
+			#load : [ 'Tests' ],
+			#platforms : [ #pharo ]
+		}
+	]
+}
