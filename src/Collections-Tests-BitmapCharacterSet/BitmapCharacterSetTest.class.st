@@ -1,3 +1,6 @@
+"
+Unit tests for BitmapCharacterSet
+"
 Class {
 	#name : #BitmapCharacterSetTest,
 	#superclass : #TestCase,
