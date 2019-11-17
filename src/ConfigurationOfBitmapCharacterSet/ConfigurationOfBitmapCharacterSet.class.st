@@ -181,7 +181,7 @@ ConfigurationOfBitmapCharacterSet >> baseline100: spec [
 			group: 'Tests' with: #('Collections-Tests-BitmapCharacterSet'). ].
 ]
 
-{ #category : #versions }
+{ #category : #'symbolic versions' }
 ConfigurationOfBitmapCharacterSet >> dev: spec [ 
 	<version: 'dev'>
 
@@ -218,19 +218,7 @@ ConfigurationOfBitmapCharacterSet >> project [
 ConfigurationOfBitmapCharacterSet >> stable: spec [
 	<symbolicVersion: #'stable'>
 
-	"GitHub starting with Pharo 7 onwards"	
-	spec for: #'common' version: '1.2.7'.
-	
-	"Use last STHub version for elder Pharo versions"
-	spec for: #'pharo4.x' version: '1.2.6'.
-	spec for: #'pharo5.x' version: '1.2.6'.
-	spec for: #'pharo6.x' version: '1.2.6'.	
-	
-	"Use latest Github version for more recent Pharo versions"	
-	spec for: #'pharo7.x' version: '1.2.7'.	
-	spec for: #'pharo8.x' version: '1.2.7'.	
-	
-	
+	spec for: #'common' version: '1.2.7'
 ]
 
 { #category : #versions }
