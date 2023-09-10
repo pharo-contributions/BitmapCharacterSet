@@ -14,12 +14,6 @@ Class {
 	#category : #'Collections-BitmapCharacterSet'
 }
 
-{ #category : #inspecting }
-BitmapCharacterSet class >> inspectorClass [
-	"does not use Set class>>inspectorClass because it is incompatible"
-	^ Smalltalk tools inspectorClass
-]
-
 { #category : #'instance creation' }
 BitmapCharacterSet class >> new [
 	^ self new: 256
