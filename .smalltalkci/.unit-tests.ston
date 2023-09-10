@@ -1,0 +1,16 @@
+SmalltalkCISpec {
+  #loading : [
+    SCIMetacelloLoadSpec {
+      #baseline : 'BitmapCharacterSet',
+      #directory : '../src',
+      #load : [ 'CI' ],
+      #platforms : [  #pharo ]
+    }
+  ],
+  #testing : {
+    #coverage : {
+      #packages : [ 'Collections-BitmapCharacterSet*' ],
+      #format: #lcov
+    }
+  }
+}
