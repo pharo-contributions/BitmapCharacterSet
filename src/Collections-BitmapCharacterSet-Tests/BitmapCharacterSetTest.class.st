@@ -7,7 +7,7 @@ Class {
 	#instVars : [
 		'characters'
 	],
-	#category : #'Collections-BitmapCharacterSet-Tests'
+	#category : #'Collections-BitmapCharacterSet-Tests-Base'
 }
 
 { #category : #enumerating }
@@ -26,18 +26,22 @@ BitmapCharacterSetTest >> absentCharactersDo: aBlock [
 
 { #category : #asserting }
 BitmapCharacterSetTest >> assertSet: aFirstSet copiedFrom: aSecondSet equals: aThirdSet [
+
 	self
-		deny: aFirstSet == aSecondSet;
-		deny: aFirstSet byteCharacters == aSecondSet byteCharacters.
-	(aFirstSet wideCharacters notNil
-		or: [aSecondSet wideCharacters notNil])
-		ifTrue: [self deny: aFirstSet wideCharacters == aSecondSet wideCharacters].
-	
-	self assert: aFirstSet = aThirdSet.
+		deny: aFirstSet identicalTo: aSecondSet;
+		deny: aFirstSet byteCharacters
+		identicalTo: aSecondSet byteCharacters.
+	(aFirstSet wideCharacters notNil or: [
+		 aSecondSet wideCharacters notNil ]) ifTrue: [
+		self
+			deny: aFirstSet wideCharacters
+			identicalTo: aSecondSet wideCharacters ].
+	self assert: aFirstSet equals: aThirdSet
 ]
 
 { #category : #accessing }
 BitmapCharacterSetTest >> characters [
+
 	^ characters
 		ifNil: [| writeStream previousValue offset |
 			writeStream := (Array new: 250000) writeStream.
@@ -63,89 +67,98 @@ BitmapCharacterSetTest >> charactersDo: aBlock [
 
 { #category : #accessing }
 BitmapCharacterSetTest >> emptySet [
+
 	^ self setClass new
 ]
 
 { #category : #accessing }
 BitmapCharacterSetTest >> lastCodePoint [
+
 	^ 16r10FFFF
 ]
 
 { #category : #accessing }
 BitmapCharacterSetTest >> nonEmptySet [
+
 	^ self setClass newFrom: self characters
 ]
 
 { #category : #accessing }
 BitmapCharacterSetTest >> rangeCharacters [
+
 	^ 'abcdefghijklmnopqrstuvwxyz'
 ]
 
 { #category : #accessing }
 BitmapCharacterSetTest >> rangeStart [
+
 	^ self rangeCharacters first
 ]
 
 { #category : #accessing }
 BitmapCharacterSetTest >> rangeStop [
+
 	^ self rangeCharacters last
 ]
 
 { #category : #accessing }
 BitmapCharacterSetTest >> setClass [
+
 	^ BitmapCharacterSet
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testAdd [
-	| set |
 
+	| set |
 	set := self emptySet.
-	self charactersDo: [:each |
+	self charactersDo: [ :each |
 		self
 			deny: (set includes: each);
-			assert: (set add: each) = each;
+			assert: (set add: each) equals: each;
 			assert: (set includes: each);
-			assert: (set add: each) = each;
-			assert: (set includes: each)].
+			assert: (set add: each) equals: each;
+			assert: (set includes: each) ]
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testAddRangeFromTo [
+
 	| set |
-
-	set := self emptySet.
-	self "empty range, because from > to"
-		assert: (set addRangeFrom: self rangeStop to: self rangeStart) == set;
-		assert: set isEmpty.
-
-	self
-		assert: (set addRangeFrom: self rangeStart to: self rangeStop) == set;
-		assert: set = (self setClass newFrom: self rangeCharacters).
-
 	set := self emptySet.
 	self
-		assert: (set addRangeFrom: self rangeStart to: self rangeStart) == set;
-		assert: set = (self setClass with: self rangeStart).
+		assert: (set addRangeFrom: self rangeStop to: self rangeStart)
+		identicalTo: set;
+		assert: set isEmpty. "empty range, because from > to"
+	self
+		assert: (set addRangeFrom: self rangeStart to: self rangeStop)
+		identicalTo: set;
+		assert: set equals: (self setClass newFrom: self rangeCharacters).
+
+	set := self emptySet.
+	self
+		assert: (set addRangeFrom: self rangeStart to: self rangeStart)
+		identicalTo: set;
+		assert: set equals: (self setClass with: self rangeStart)
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testByteCharactersDo [
-	| set enumerated |
 
+	| set enumerated |
 	set := self emptySet.
 	enumerated := OrderedCollection new.
 
-	set byteCharactersDo: [:each | enumerated addLast: each].
+	set byteCharactersDo: [ :each | enumerated addLast: each ].
 	self assert: enumerated isEmpty.
 
 	set addAll: self characters.
-	set byteCharactersDo: [:each | enumerated addLast: each].
+	set byteCharactersDo: [ :each | enumerated addLast: each ].
 	self assert: enumerated notEmpty.
-	enumerated withIndexDo: [:each :i |
+	enumerated withIndexDo: [ :each :i |
 		self
 			assert: each asciiValue < 256;
-			assert: each = (self characters at: i)].
+			assert: each equals: (self characters at: i) ]
 ]
 
 { #category : #tests }
@@ -154,31 +167,30 @@ BitmapCharacterSetTest >> testCapacity [
 	even when a specific capacity is specified."
 
 	self
-		assert: (self setClass new: 0) capacity = 256;
-		assert: (self setClass new: 256) capacity = 256.
-	257 to: 264 do: [:i |
-		self assert: (self setClass new: i) capacity = 264].
-	265 to: 272 do: [:i |
-		self assert: (self setClass new: i) capacity = 272].
+		assert: (self setClass new: 0) capacity equals: 256;
+		assert: (self setClass new: 256) capacity equals: 256.
+	257 to: 264 do: [ :i |
+	self assert: (self setClass new: i) capacity equals: 264 ].
+	265 to: 272 do: [ :i |
+	self assert: (self setClass new: i) capacity equals: 272 ]
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testComplement [
-	| set complement |
 
+	| set complement |
 	set := self nonEmptySet.
 	complement := set complement.
-	self deny: set = complement.
-	self charactersDo: [:each |
+	self deny: set equals: complement.
+	self charactersDo: [ :each |
 		self
 			assert: (set includes: each);
-			deny: (complement includes: each)].
-	self absentCharactersDo: [:each |
+			deny: (complement includes: each) ].
+	self absentCharactersDo: [ :each |
 		self
 			deny: (set includes: each);
-			assert: (complement includes: each)].
-
-	self assert: complement complement = set.
+			assert: (complement includes: each) ].
+	self assert: complement complement equals: set
 ]
 
 { #category : #tests }
@@ -199,7 +211,7 @@ BitmapCharacterSetTest >> testConcatenation [
 	self
 		assertSet: set, self nonEmptySet
 		copiedFrom: set
-		equals: self nonEmptySet.
+		equals: self nonEmptySet
 ]
 
 { #category : #tests }
@@ -216,7 +228,7 @@ BitmapCharacterSetTest >> testCopy [
 	self
 		assertSet: set copy
 		copiedFrom: set
-		equals: self nonEmptySet.
+		equals: self nonEmptySet
 ]
 
 { #category : #tests }
@@ -233,35 +245,36 @@ BitmapCharacterSetTest >> testCopyEmpty [
 	self
 		assertSet: set copyEmpty
 		copiedFrom: set
-		equals: self emptySet.
+		equals: self emptySet
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testDo [
-	| set enumerated |
 
+	| set enumerated |
 	set := self emptySet.
 	enumerated := OrderedCollection new.
 
-	set do: [:each | enumerated addLast: each].
+	set do: [ :each | enumerated addLast: each ].
 	self assert: enumerated isEmpty.
 
 	set addAll: self characters.
-	set do: [:each | enumerated addLast: each].
-	self assert: enumerated size = self characters size.
+	set do: [ :each | enumerated addLast: each ].
+	self assert: enumerated size equals: self characters size.
 	enumerated
 		with: self characters
-		do: [:enumeratedChar :expectedChar |
-			self assert: enumeratedChar = expectedChar]
+		do: [ :enumeratedChar :expectedChar |
+			self assert: enumeratedChar equals: expectedChar ]
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testEquals [
+
 	self
-		assert: self emptySet = self emptySet;
-		assert: self nonEmptySet = self nonEmptySet;
-		deny: self emptySet = self nonEmptySet;
-		deny: self nonEmptySet = self emptySet
+		assert: self emptySet equals: self emptySet;
+		assert: self nonEmptySet equals: self nonEmptySet;
+		deny: self emptySet equals: self nonEmptySet;
+		deny: self nonEmptySet equals: self emptySet
 ]
 
 { #category : #tests }
@@ -278,214 +291,213 @@ BitmapCharacterSetTest >> testHasWideCharacters [
 	self assert: set hasWideCharacters.
 
 	set remove: 256 asCharacter.
-	self deny: set hasWideCharacters.
+	self deny: set hasWideCharacters
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testHash [
+
 	self
-		assert: self emptySet hash = self emptySet hash;
-		assert: self nonEmptySet hash = self nonEmptySet hash
+		assert: self emptySet hash equals: self emptySet hash;
+		assert: self nonEmptySet hash equals: self nonEmptySet hash
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testIncludes [
-	| set |
 
+	| set |
 	set := self emptySet.
 	self
-		charactersDo: [:each | self deny: (set includes: each)];
-		absentCharactersDo: [:each | self deny: (set includes: each)].
+		charactersDo: [ :each | self deny: (set includes: each) ];
+		absentCharactersDo: [ :each | self deny: (set includes: each) ].
 
 	set := self nonEmptySet.
 	self
-		charactersDo: [:each | self assert: (set includes: each)];
-		absentCharactersDo: [:each | self deny: (set includes: each)].
+		charactersDo: [ :each | self assert: (set includes: each) ];
+		absentCharactersDo: [ :each | self deny: (set includes: each) ]
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testIncludesRangeFromTo [
-	| set |
 
+	| set |
 	set := self emptySet.
-	self rangeCharacters do: [:each |
+	self rangeCharacters do: [ :each |
 		self
 			deny: (set includesRangeFrom: self rangeStart to: self rangeStop);
 			assert: (set includesRangeFrom: self rangeStop to: self rangeStart).
-		set add: each].
+		set add: each ].
 	self
 		assert: (set includesRangeFrom: self rangeStart to: self rangeStop);
-		assert: (set includesRangeFrom: self rangeStop to: self rangeStart).
+		assert: (set includesRangeFrom: self rangeStop to: self rangeStart)
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testMaxCapacity [
-	| maxCapacity set |
 
+	| maxCapacity set |
 	maxCapacity := self lastCodePoint + 1.
 
 	set := self setClass new: maxCapacity.
-	self assert: set capacity = maxCapacity.
+	self assert: set capacity equals: maxCapacity.
 
 	set := self setClass new: maxCapacity + 1.
-	self assert: set capacity = maxCapacity.
+	self assert: set capacity equals: maxCapacity.
 
 	set := self setClass new: maxCapacity * 2.
-	self assert: set capacity = maxCapacity.
+	self assert: set capacity equals: maxCapacity
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testMaxCharacter [
-	| set |
 
+	| set |
 	set := self emptySet.
-	self
-		shouldnt: [set add: self lastCodePoint asCharacter]
-		raise: Error.
+	set add: self lastCodePoint asCharacter.
 	self assert: (set includes: self lastCodePoint asCharacter).
 	self
-		should: [set add: (self lastCodePoint + 1) asCharacter]
-		raise: Error.
+		should: [ set add: (self lastCodePoint + 1) asCharacter ]
+		raise: Error
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testNewFrom [
-	| set newSet |
 
+	| set newSet |
 	set := self setClass newFrom: self characters.
-	self assert: set class == self setClass.
-	self charactersDo: [:each | self assert: (set includes: each)].
+	self assert: set class identicalTo: self setClass.
+	self charactersDo: [ :each | self assert: (set includes: each) ].
 
 	newSet := self setClass newFrom: set.
 	self
-		assert: newSet = set;
-		deny: newSet == set.
+		assert: newSet equals: set;
+		deny: newSet identicalTo: set
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testRemoveAll [
-	| set capacity byteCharactersSize wideCharactersSize|
 
+	| set capacity byteCharactersSize wideCharactersSize |
 	set := self nonEmptySet.
 	capacity := set capacity.
 	byteCharactersSize := set byteCharacters size.
 	wideCharactersSize := set wideCharacters size.
 	self
-		assert: set removeAll == set;
-		assert: set size = 0;
-		assert: set capacity = capacity;
-		assert: set byteCharacters size = byteCharactersSize;
-		assert: (set byteCharacters allSatisfy: [:each | each = false]);
-		assert: set wideCharacters size = wideCharactersSize;
-		assert: (set wideCharacters allSatisfy: [:each | each = 0]).
+		assert: set removeAll identicalTo: set;
+		assert: set size equals: 0;
+		assert: set capacity equals: capacity;
+		assert: set byteCharacters size equals: byteCharactersSize;
+		assert: (set byteCharacters allSatisfy: [ :each | each = false ]);
+		assert: set wideCharacters size equals: wideCharactersSize;
+		assert: (set wideCharacters allSatisfy: [ :each | each = 0 ])
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testRemoveIfAbsent [
-	| set |
 
+	| set |
 	set := self nonEmptySet.
-	self absentCharactersDo: [:each |
-		self assert:
-			(set
-				remove: each
-				ifAbsent: [#absent]) = #absent].
-	self charactersDo: [:each |
-		self assert:
-			(set
-				remove: each
-				ifAbsent: [self fail]) = each.
-		self assert:
-			(set
-				remove: each
-				ifAbsent: [#absent]) = #absent].
+	self absentCharactersDo: [ :each |
+		self
+			assert: (set remove: each ifAbsent: [ #absent ])
+			equals: #absent ].
+	self charactersDo: [ :each |
+		self assert: (set remove: each ifAbsent: [ self fail ]) equals: each.
+		self
+			assert: (set remove: each ifAbsent: [ #absent ])
+			equals: #absent ]
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testRemoveRangeFromTo [
-	| set |
 
+	| set |
 	set := self emptySet.
-	self "empty range, because from > to"
-		assert: (set removeRangeFrom: self rangeStop to: self rangeStart) == set;
+	self
+		assert: (set removeRangeFrom: self rangeStop to: self rangeStart)
+		identicalTo: set;
 		assert: set isEmpty.
 
 	set addRangeFrom: self rangeStart to: self rangeStop.
 	self
-		assert: (set removeRangeFrom: self rangeStart to: self rangeStop) == set;
+		assert: (set removeRangeFrom: self rangeStart to: self rangeStop)
+		identicalTo: set;
 		assert: set isEmpty.
 
-	self rangeCharacters do: [:each |
+	self rangeCharacters do: [ :each |
 		set := self setClass newFrom: self rangeCharacters.
 		self
-			assert: (set removeRangeFrom: each to: each) == set;
-			assert:
-				set =
-					(self setClass newFrom: (self rangeCharacters copyWithout: each)).
-		self
-			should: [set removeRangeFrom: each to: each]
-			raise: Error].
+			assert: (set removeRangeFrom: each to: each) identicalTo: set;
+			assert: set
+			equals:
+				(self setClass newFrom: (self rangeCharacters copyWithout: each)).
+		self should: [ set removeRangeFrom: each to: each ] raise: Error ]
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testSize [
-	| set size |
 
+	| set size |
 	set := self emptySet.
 	size := 0.
-	self charactersDo: [:each |
-		self assert: set size = size.
+	self charactersDo: [ :each |
+		self assert: set size equals: size.
 		set add: each.
 		size := size + 1.
-		self assert: set size = size.
-
-		"Adding the same character shouldn't alter the size"
+		self assert: set size equals: size.
 		set add: each.
-		self assert: set size = size.].
+		self assert: set size equals: size ].
 
-	self charactersDo: [:each |
+	self charactersDo: [ :each |
 		set remove: each.
 		size := size - 1.
-		self assert: set size = size].	
+		self assert: set size equals: size ]
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testWideCharacters [
-	0 to: 7 do: [:i | | set character |
+
+	0 to: 7 do: [ :i |
+		| set character |
 		set := self setClass new.
 		character := (256 + i) asCharacter.
 		self assert: set wideCharacters isNil.
 		set add: character.
-		self assert: set wideCharacters first = (16r80 bitShift: i negated).
+		self
+			assert: set wideCharacters first
+			equals: (16r80 bitShift: i negated).
 		set remove: character.
-		self assert: set wideCharacters first = 0].
-	0 to: 7 do: [:i | | set character |
+		self assert: set wideCharacters first equals: 0 ].
+	0 to: 7 do: [ :i |
+		| set character |
 		set := self setClass new.
 		character := (256 + 8 + i) asCharacter.
 		self assert: set wideCharacters isNil.
 		set add: character.
-		self assert: set wideCharacters second = (16r80 bitShift: i negated).
+		self
+			assert: set wideCharacters second
+			equals: (16r80 bitShift: i negated).
 		set remove: character.
-		self assert: set wideCharacters second = 0]
+		self assert: set wideCharacters second equals: 0 ]
 ]
 
 { #category : #tests }
 BitmapCharacterSetTest >> testWideCharactersDo [
-	| set enumerated wideCharOffset |
 
+	| set enumerated wideCharOffset |
 	set := self emptySet.
 	enumerated := OrderedCollection new.
 
-	set wideCharactersDo: [:each | enumerated addLast: each].
+	set wideCharactersDo: [ :each | enumerated addLast: each ].
 	self assert: enumerated isEmpty.
 
 	set addAll: self characters.
-	set wideCharactersDo: [:each | enumerated addLast: each].
+	set wideCharactersDo: [ :each | enumerated addLast: each ].
 	self assert: enumerated notEmpty.
-	wideCharOffset :=
-		(self characters findFirst: [:each | each asciiValue >= 256]) - 1.
-	enumerated withIndexDo: [:each :i |
+	wideCharOffset := (self characters findFirst: [ :each |
+		                   each asciiValue >= 256 ]) - 1.
+	enumerated withIndexDo: [ :each :i |
 		self
 			assert: each asciiValue >= 256;
-			assert: each = (self characters at: wideCharOffset + i)].
+			assert: each equals: (self characters at: wideCharOffset + i) ]
 ]
