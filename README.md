@@ -1,6 +1,6 @@
 # BitmapCharacterSet
 
-**BitmapCharacterSet** is a set for characters that uses a bitmap for storing wide characters and an array of truth values for byte characters. Used by [XMLParser](https://github.com/pharo-contributions/XML-XMLParser).
+**BitmapCharacterSet** is a set for characters that uses a bitmap for storing wide characters and an array of truth values for byte characters in [Pharo](https://www.pharo.org). Used by [XMLParser](https://github.com/pharo-contributions/XML-XMLParser).
 
 [![Unit Tests](https://github.com/pharo-contributions/BitmapCharacterSet/workflows/Build/badge.svg?branch=master)](https://github.com/pharo-contributions/BitmapCharacterSet/actions?query=workflow%3ABuild)
 [![Coverage Status](https://codecov.io/github/pharo-contributions/BitmapCharacterSet/coverage.svg?branch=master)](https://codecov.io/gh/pharo-contributions/BitmapCharacterSet/branch/master)
