@@ -11,7 +11,7 @@ Class {
 		'wideCharacters',
 		'tally'
 	],
-	#category : #'Collections-BitmapCharacterSet'
+	#category : #'Collections-BitmapCharacterSet-Base'
 }
 
 { #category : #inspecting }
@@ -22,32 +22,37 @@ BitmapCharacterSet class >> inspectorClass [
 
 { #category : #'instance creation' }
 BitmapCharacterSet class >> new [
+
 	^ self new: 256
 ]
 
 { #category : #'instance creation' }
 BitmapCharacterSet class >> new: aCapacity [
+
 	^ self basicNew initialize: aCapacity
 ]
 
 { #category : #'instance creation' }
 BitmapCharacterSet class >> newFrom: aCollection [
 	"for GS portability"
+
 	^ self new
 		addAll: aCollection;
-		yourself	
+		yourself
 ]
 
 { #category : #copying }
 BitmapCharacterSet >> , aCollection [
 	"GS doesn't define #, for non-Sequenceable collections"
+
 	^ self copy
-		addAll: aCollection;
-		yourself
+		  addAll: aCollection;
+		  yourself
 ]
 
 { #category : #comparing }
 BitmapCharacterSet >> = anObject [
+
 	self == anObject
 		ifTrue: [^ true].
 
@@ -58,28 +63,26 @@ BitmapCharacterSet >> = anObject [
 	self do: [:each |
 		(anObject includes: each)
 			ifFalse: [^ false]].
-	^ true.
+	^ true
 ]
 
 { #category : #adding }
 BitmapCharacterSet >> add: aCharacter [
-	| asciiValue |
 
+	| asciiValue |
 	"optimized for speed with inlining; do not refactor"
 	(asciiValue := aCharacter asciiValue) < 256
 		ifTrue: [
-			(byteCharacters at: asciiValue + 1)
-				ifFalse: [tally := tally + 1].
-			byteCharacters
-				at: asciiValue + 1
-				put: true]
-		ifFalse: [| byteIndex byte bitmask |
+			(byteCharacters at: asciiValue + 1) ifFalse: [ tally := tally + 1 ].
+			byteCharacters at: asciiValue + 1 put: true ]
+		ifFalse: [
+			| byteIndex byte bitmask |
 			"256 // 8 - 31 = 1 (first index), (256 + 8) // 8 - 31 = 2 (second), etc
 			(with 'bitShift: -3' used over '// 8' for speed)"
 			byteIndex := (asciiValue bitShift: -3) - 31.
-			(wideCharacters == nil
-				or: [byteIndex > wideCharacters size])
-				ifTrue: [self growWideCharacterBitmapTo: (byteIndex * 1.5) asInteger].
+			(wideCharacters isNil or: [ byteIndex > wideCharacters size ])
+				ifTrue: [
+				self growWideCharacterBitmapTo: (byteIndex * 1.5) asInteger ].
 
 			"raises an error if asciiValue > 16r10FFFF"
 			byte := wideCharacters at: byteIndex.
@@ -87,15 +90,12 @@ BitmapCharacterSet >> add: aCharacter [
 			"for the byte bitmask, left shift 1 by 7 - (asciiValue \\ 8)
 			(with 'bitAnd: 7' used over '\\ 8' for speed)"
 			bitmask := 1 bitShift: 7 - (asciiValue bitAnd: 7).
-			
-			"increment the tally if the character is not already present"
-			(byte bitAnd: bitmask) == 0
-				ifTrue: [tally := tally + 1].
 
-			wideCharacters
-				at: byteIndex
-				put: (byte bitOr: bitmask)].
-	^ aCharacter.
+			"increment the tally if the character is not already present"
+			(byte bitAnd: bitmask) == 0 ifTrue: [ tally := tally + 1 ].
+
+			wideCharacters at: byteIndex put: (byte bitOr: bitmask) ].
+	^ aCharacter
 ]
 
 { #category : #adding }
@@ -113,44 +113,49 @@ BitmapCharacterSet >> addRangeFrom: aStartCharacter to: aStopCharacter [
 
 { #category : #private }
 BitmapCharacterSet >> byteCharacters [
+
 	^ byteCharacters
 ]
 
 { #category : #enumerating }
 BitmapCharacterSet >> byteCharactersDo: aBlock [
-	1 to: byteCharacters size do: [:i |
-		(byteCharacters at: i)
-			ifTrue: [aBlock value: (Character value: i - 1)]]
+
+	1 to: byteCharacters size do: [ :i |
+		(byteCharacters at: i) ifTrue: [
+			aBlock value: (Character value: i - 1) ] ]
 ]
 
 { #category : #accessing }
 BitmapCharacterSet >> capacity [
+
 	^ byteCharacters size +
 		(wideCharacters
 			ifNil: [0]
-			ifNotNil: [wideCharacters size * 8]).
+			ifNotNil: [wideCharacters size * 8])
 ]
 
 { #category : #converting }
 BitmapCharacterSet >> complement [
-	| copy |
 
+	| copy |
 	copy := self copyEmpty.
 	0 to: 16r10FFFF do: [:i | | character |
 		character := (Character value: i).
 		(self includes: character)
 			ifFalse: [copy add: character]].
-	^ copy.
+	^ copy
 ]
 
 { #category : #copying }
 BitmapCharacterSet >> copyEmpty [
 	"reimplemented for GS and Squeak compatibility"
+
 	^ self species new: self capacity
 ]
 
 { #category : #enumerating }
 BitmapCharacterSet >> do: aBlock [
+
 	self
 		byteCharactersDo: aBlock;
 		wideCharactersDo: aBlock
@@ -158,8 +163,8 @@ BitmapCharacterSet >> do: aBlock [
 
 { #category : #private }
 BitmapCharacterSet >> growWideCharacterBitmapTo: aSizeInBytes [
-	| newSize |
 
+	| newSize |
 	newSize := aSizeInBytes min: self maxWideCharactersSize.
 	wideCharacters
 		ifNil: [wideCharacters := ByteArray new: newSize]
@@ -169,29 +174,30 @@ BitmapCharacterSet >> growWideCharacterBitmapTo: aSizeInBytes [
 					replaceFrom: 1
 					to: wideCharacters size
 					with: wideCharacters
-					startingAt: 1].
+					startingAt: 1]
 ]
 
 { #category : #testing }
 BitmapCharacterSet >> hasWideCharacters [
+
 	self wideCharactersDo: [:each | ^ true].
-	^ false.
+	^ false
 ]
 
 { #category : #comparing }
 BitmapCharacterSet >> hash [
-	| hash |
 
+	| hash |
 	hash := self species hash.
 	self byteCharactersDo: [:each |
 		hash := hash bitXor: each hash].
-	^ hash bitXor: self size hash.
+	^ hash bitXor: self size hash
 ]
 
 { #category : #testing }
 BitmapCharacterSet >> includes: aCharacter [
-	| asciiValue |
 
+	| asciiValue |
 	"optimized for speed with inlining; do not refactor"
 	(asciiValue := aCharacter asciiValue) < 256
 		ifTrue: [^ byteCharacters at: asciiValue + 1]
@@ -222,11 +228,12 @@ BitmapCharacterSet >> includesRangeFrom: aStartCharacter to: aStopCharacter [
 		do: [:i |
 			(self includes: (Character value: i))
 				ifFalse: [^ false]].
-	^ true.
+	^ true
 ]
 
 { #category : #initialization }
 BitmapCharacterSet >> initialize: aCapacity [
+
 	byteCharacters := Array new: 256 withAll: false.
 	aCapacity > 256
 		ifTrue: [
@@ -234,25 +241,28 @@ BitmapCharacterSet >> initialize: aCapacity [
 			(257 + 8 - 1) // 8 - 31 = 2 (second byte), etc
 			(with 'bitShift: -3' used over '// 8' for speed)"
 			self growWideCharacterBitmapTo: ((aCapacity - 1) bitShift: -3) - 31].
-	tally := 0.
+	tally := 0
 ]
 
 { #category : #testing }
 BitmapCharacterSet >> isEmpty [
 	"Squeak's Collection>>#isEmpty is inefficient"
+
 	^ self size = 0
 ]
 
 { #category : #private }
 BitmapCharacterSet >> maxWideCharactersSize [
+
 	^ 139232 "(16r10FFFF bitShift: -3) - 31"
 ]
 
 { #category : #copying }
 BitmapCharacterSet >> postCopy [
+
 	byteCharacters := byteCharacters copy.
 	wideCharacters
-		ifNotNil: [wideCharacters := wideCharacters copy].
+		ifNotNil: [wideCharacters := wideCharacters copy]
 ]
 
 { #category : #removing }
@@ -270,7 +280,7 @@ BitmapCharacterSet >> remove: aCharacter ifAbsent: aBlock [
 		ifFalse: [| byteIndex byte bitmask |
 			wideCharacters
 				ifNil: [^ aBlock value].
-	
+
 			"256 // 8 - 31 = 1 (first index), (256 + 8) // 8 - 31 = 2 (second), etc
 			(with 'bitShift: -3' used over '// 8' for speed)"
 			(byteIndex := (asciiValue bitShift: -3) - 31) > wideCharacters size
@@ -286,7 +296,7 @@ BitmapCharacterSet >> remove: aCharacter ifAbsent: aBlock [
 				at: byteIndex
 				put: (byte bitAnd: bitmask bitInvert)].
 	tally := tally - 1.
-	^ aCharacter.
+	^ aCharacter
 ]
 
 { #category : #removing }
@@ -314,6 +324,7 @@ BitmapCharacterSet >> removeRangeFrom: aStartCharacter to: aStopCharacter [
 
 	"chars don't support to:do: (compiled inline) and using to: and do:
 	separately needlessly creates a (possibly large) temp array"
+
 	aStartCharacter asciiValue
 		to: aStopCharacter asciiValue
 		do: [:i | self remove: (Character value: i)]
@@ -321,19 +332,21 @@ BitmapCharacterSet >> removeRangeFrom: aStartCharacter to: aStopCharacter [
 
 { #category : #accessing }
 BitmapCharacterSet >> size [
+
 	^ tally
 ]
 
 { #category : #private }
 BitmapCharacterSet >> wideCharacters [
+
 	^ wideCharacters
 ]
 
 { #category : #enumerating }
 BitmapCharacterSet >> wideCharactersDo: aBlock [
 	"optimized for speed with to:do: and inlining; do not refactor"
-	| baseValue |
 
+	| baseValue |
 	wideCharacters
 		ifNil: [^ self].
 
@@ -346,5 +359,5 @@ BitmapCharacterSet >> wideCharactersDo: aBlock [
 						ifFalse: [
 							aBlock value:
 								(Character value: baseValue + shiftIndex)]]].
-		baseValue := baseValue + 8].
+		baseValue := baseValue + 8]
 ]
