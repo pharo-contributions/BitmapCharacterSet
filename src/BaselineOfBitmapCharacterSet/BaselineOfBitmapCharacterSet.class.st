@@ -21,6 +21,7 @@ BaselineOfBitmapCharacterSet >> baseline: spec [
 		spec				
 				group: 'Core' with: #('Collections-BitmapCharacterSet');
 				group: 'Tests' with: #('Collections-BitmapCharacterSet-Tests');
+				group: 'CI' with: #('Tests');
 				group: 'all' with: #('Core' 'Tests');
 				group: 'default' with: #('all')	
 	]
