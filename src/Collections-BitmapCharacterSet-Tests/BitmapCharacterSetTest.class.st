@@ -2,15 +2,17 @@
 Unit tests for BitmapCharacterSet
 "
 Class {
-	#name : #BitmapCharacterSetTest,
-	#superclass : #TestCase,
+	#name : 'BitmapCharacterSetTest',
+	#superclass : 'TestCase',
 	#instVars : [
 		'characters'
 	],
-	#category : #'Collections-BitmapCharacterSet-Tests-Base'
+	#category : 'Collections-BitmapCharacterSet-Tests-Base',
+	#package : 'Collections-BitmapCharacterSet-Tests',
+	#tag : 'Base'
 }
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 BitmapCharacterSetTest >> absentCharactersDo: aBlock [
 	| previousValue |
 
@@ -24,22 +26,22 @@ BitmapCharacterSetTest >> absentCharactersDo: aBlock [
 		aBlock value: i asCharacter].
 ]
 
-{ #category : #asserting }
+{ #category : 'asserting' }
 BitmapCharacterSetTest >> assertSet: aFirstSet copiedFrom: aSecondSet equals: aThirdSet [
 
 	self
 		deny: aFirstSet identicalTo: aSecondSet;
 		deny: aFirstSet byteCharacters
 		identicalTo: aSecondSet byteCharacters.
-	(aFirstSet wideCharacters notNil or: [
-		 aSecondSet wideCharacters notNil ]) ifTrue: [
+	(aFirstSet wideCharacters isNotNil or: [
+		 aSecondSet wideCharacters isNotNil ]) ifTrue: [
 		self
 			deny: aFirstSet wideCharacters
 			identicalTo: aSecondSet wideCharacters ].
 	self assert: aFirstSet equals: aThirdSet
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 BitmapCharacterSetTest >> characters [
 
 	^ characters
@@ -60,54 +62,54 @@ BitmapCharacterSetTest >> characters [
 			characters := writeStream contents]
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 BitmapCharacterSetTest >> charactersDo: aBlock [
 	self characters do: aBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 BitmapCharacterSetTest >> emptySet [
 
 	^ self setClass new
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 BitmapCharacterSetTest >> lastCodePoint [
 
 	^ 16r10FFFF
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 BitmapCharacterSetTest >> nonEmptySet [
 
 	^ self setClass newFrom: self characters
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 BitmapCharacterSetTest >> rangeCharacters [
 
 	^ 'abcdefghijklmnopqrstuvwxyz'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 BitmapCharacterSetTest >> rangeStart [
 
 	^ self rangeCharacters first
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 BitmapCharacterSetTest >> rangeStop [
 
 	^ self rangeCharacters last
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 BitmapCharacterSetTest >> setClass [
 
 	^ BitmapCharacterSet
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testAdd [
 
 	| set |
@@ -121,7 +123,7 @@ BitmapCharacterSetTest >> testAdd [
 			assert: (set includes: each) ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testAddRangeFromTo [
 
 	| set |
@@ -142,7 +144,7 @@ BitmapCharacterSetTest >> testAddRangeFromTo [
 		assert: set equals: (self setClass with: self rangeStart)
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testByteCharactersDo [
 
 	| set enumerated |
@@ -161,7 +163,7 @@ BitmapCharacterSetTest >> testByteCharactersDo [
 			assert: each equals: (self characters at: i) ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testCapacity [
 	"Since the bitmap is allocated in bytes, the last byte can have excess capacity
 	even when a specific capacity is specified."
@@ -175,7 +177,7 @@ BitmapCharacterSetTest >> testCapacity [
 	self assert: (self setClass new: i) capacity equals: 272 ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testComplement [
 
 	| set complement |
@@ -193,7 +195,7 @@ BitmapCharacterSetTest >> testComplement [
 	self assert: complement complement equals: set
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testConcatenation [
 	| set |
 
@@ -214,7 +216,7 @@ BitmapCharacterSetTest >> testConcatenation [
 		equals: self nonEmptySet
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testCopy [
 	| set |
 
@@ -231,7 +233,7 @@ BitmapCharacterSetTest >> testCopy [
 		equals: self nonEmptySet
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testCopyEmpty [
 	| set |
 
@@ -248,7 +250,7 @@ BitmapCharacterSetTest >> testCopyEmpty [
 		equals: self emptySet
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testDo [
 
 	| set enumerated |
@@ -267,7 +269,7 @@ BitmapCharacterSetTest >> testDo [
 			self assert: enumeratedChar equals: expectedChar ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testEquals [
 
 	self
@@ -277,7 +279,7 @@ BitmapCharacterSetTest >> testEquals [
 		deny: self nonEmptySet equals: self emptySet
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testHasWideCharacters [
 	| set |
 
@@ -294,7 +296,7 @@ BitmapCharacterSetTest >> testHasWideCharacters [
 	self deny: set hasWideCharacters
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testHash [
 
 	self
@@ -302,7 +304,7 @@ BitmapCharacterSetTest >> testHash [
 		assert: self nonEmptySet hash equals: self nonEmptySet hash
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testIncludes [
 
 	| set |
@@ -317,7 +319,7 @@ BitmapCharacterSetTest >> testIncludes [
 		absentCharactersDo: [ :each | self deny: (set includes: each) ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testIncludesRangeFromTo [
 
 	| set |
@@ -332,7 +334,7 @@ BitmapCharacterSetTest >> testIncludesRangeFromTo [
 		assert: (set includesRangeFrom: self rangeStop to: self rangeStart)
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testMaxCapacity [
 
 	| maxCapacity set |
@@ -348,7 +350,7 @@ BitmapCharacterSetTest >> testMaxCapacity [
 	self assert: set capacity equals: maxCapacity
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testMaxCharacter [
 
 	| set |
@@ -360,7 +362,7 @@ BitmapCharacterSetTest >> testMaxCharacter [
 		raise: Error
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testNewFrom [
 
 	| set newSet |
@@ -374,7 +376,7 @@ BitmapCharacterSetTest >> testNewFrom [
 		deny: newSet identicalTo: set
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testRemoveAll [
 
 	| set capacity byteCharactersSize wideCharactersSize |
@@ -392,7 +394,7 @@ BitmapCharacterSetTest >> testRemoveAll [
 		assert: (set wideCharacters allSatisfy: [ :each | each = 0 ])
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testRemoveIfAbsent [
 
 	| set |
@@ -408,7 +410,7 @@ BitmapCharacterSetTest >> testRemoveIfAbsent [
 			equals: #absent ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testRemoveRangeFromTo [
 
 	| set |
@@ -434,7 +436,7 @@ BitmapCharacterSetTest >> testRemoveRangeFromTo [
 		self should: [ set removeRangeFrom: each to: each ] raise: Error ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testSize [
 
 	| set size |
@@ -454,7 +456,7 @@ BitmapCharacterSetTest >> testSize [
 		self assert: set size equals: size ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testWideCharacters [
 
 	0 to: 7 do: [ :i |
@@ -481,7 +483,7 @@ BitmapCharacterSetTest >> testWideCharacters [
 		self assert: set wideCharacters second equals: 0 ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BitmapCharacterSetTest >> testWideCharactersDo [
 
 	| set enumerated wideCharOffset |
