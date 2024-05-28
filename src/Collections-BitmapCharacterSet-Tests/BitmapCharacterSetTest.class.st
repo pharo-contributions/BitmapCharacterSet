@@ -64,6 +64,7 @@ BitmapCharacterSetTest >> characters [
 
 { #category : 'enumerating' }
 BitmapCharacterSetTest >> charactersDo: aBlock [
+
 	self characters do: aBlock
 ]
 
@@ -197,8 +198,8 @@ BitmapCharacterSetTest >> testComplement [
 
 { #category : 'tests' }
 BitmapCharacterSetTest >> testConcatenation [
-	| set |
 
+	| set |
 	set := self emptySet.
 	self
 		assertSet: set, self nonEmptySet
@@ -218,8 +219,8 @@ BitmapCharacterSetTest >> testConcatenation [
 
 { #category : 'tests' }
 BitmapCharacterSetTest >> testCopy [
-	| set |
 
+	| set |
 	set := self emptySet.
 	self
 		assertSet: set copy
@@ -235,8 +236,8 @@ BitmapCharacterSetTest >> testCopy [
 
 { #category : 'tests' }
 BitmapCharacterSetTest >> testCopyEmpty [
-	| set |
 
+	| set |
 	set := self emptySet.
 	self
 		assertSet: set copyEmpty
@@ -281,8 +282,8 @@ BitmapCharacterSetTest >> testEquals [
 
 { #category : 'tests' }
 BitmapCharacterSetTest >> testHasWideCharacters [
-	| set |
 
+	| set |
 	set := self emptySet.
 	self deny: set hasWideCharacters.
 
